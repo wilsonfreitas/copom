@@ -9,7 +9,11 @@
 The package \code{flatforwardCOPOM} implements flatforwardCOPOM
 interpolation to spot rate curves.
 This interpolation considers that the interest rate between COPOM meetings
-in Brazil are flat, instead of being flat betweet futures maturities.
+in Brazil are flat, instead of being flat betweet bonds maturities.
+This is mainly relevant for the short term of the term structure where
+the interpolation is used to price private bonds and interest rate
+derivatives.
+This is discussed in the book Brazilian Derivatives and Securities.
 }
 \references{
 Marcos C. S. Carreira and Richard J. Brostowicz.
