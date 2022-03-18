@@ -10,9 +10,10 @@ Description: Interpolation of term structures of interest rates that
     In Brazil these meetins are called COPOM and this interpolation considers
     that the interest rate between COPOM meetings are flat, instead of being
     flat betweet bonds maturities.
-    This is mainly  for the short term of the term structure where
+    This is relevant for the short term of the term structure where
     the interpolation is used to price private bonds and interest rate
     derivatives.
+    The reference on this method is Carreira and Brostowicz (2016 ISBN: 978-1-137-47727-9).
 Imports: bizdays, fixedincome, methods
 License: MIT + file LICENSE
 Encoding: UTF-8
