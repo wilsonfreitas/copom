@@ -1,25 +1,32 @@
 
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # flatforwardCOPOM
 
 <!-- badges: start -->
-[![CRAN status](https://www.r-pkg.org/badges/version/flatforwardCOPOM)](https://CRAN.R-project.org/package=flatforwardCOPOM)
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/flatforwardCOPOM)](https://CRAN.R-project.org/package=flatforwardCOPOM)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of flatforwardCOPOM is to interpolate term structures of interest rates taking into account the meetings where the regulators discuss
-the changes on interest rates.
+The goal of flatforwardCOPOM is to interpolate term structures of
+interest rates taking into account the meetings where the regulators
+discuss the changes on interest rates.
 
-In Brazil these meetins are called COPOM and this interpolation considers
-that the interest rate between COPOM meetings are flat, instead of being
-flat betweet bonds maturities.
+In Brazil these meetins are called COPOM and this interpolation
+considers that the interest rate between COPOM meetings are flat,
+instead of being flat betweet bonds maturities.
 
-This is mainly  for the short term of the term structure where
-the interpolation is used to price private bonds and interest rate
+This is mainly for the short term of the term structure where the
+interpolation is used to price private bonds and interest rate
 derivatives.
 
 ## Installation
 
-You can install the development version of flatforwardCOPOM from [GitHub](https://github.com/) with:
+You can install the development version of flatforwardCOPOM from
+[GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
@@ -47,6 +54,8 @@ curve <- spotratecurve(
 )
 interpolation(curve) <- interp_flatforwardcopom(copom_dates, "second")
 
-plot(curve, use_interpolation = TRUE, show_forward = TRUE)
+plot(curve, use_interpolation = TRUE, show_forward = TRUE,
+     legend_location = "bottomright")
 ```
 
+<img src="man/figures/README-example-1.png" width="100%" />
