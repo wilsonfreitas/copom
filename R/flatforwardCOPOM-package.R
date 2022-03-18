@@ -13,7 +13,7 @@
 #' @aliases flatforwardCOPOM
 #' @author Wilson Freitas \email{wilson.freitas@gmail.com}
 #' @references Marcos C. S. Carreira and Richard J. Brostowicz.
-#'             Brazilian Derivatives and Securities, Palgrave Macmillan, 2016
+#'             "Brazilian Derivatives and Securities", Palgrave Macmillan, 2016
 #' @importFrom fixedincome forwardrate maturities as.spotratecurve term
 #' @importFrom fixedincome compound prepare_interpolation toyears spotratecurve
 #' @importFrom fixedincome spotratecurve rates
