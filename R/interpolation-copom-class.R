@@ -144,7 +144,7 @@ setMethod(
 #' Once `date` is set, `n` dates greater than or equal to `date` are returned.
 #'
 #' @return A vector with `Date` objects.
-#' @example
+#' @examples
 #' get_copom_dates()
 #' get_copom_dates("2022-01-04", 4)
 #' @export

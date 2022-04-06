@@ -17,7 +17,7 @@ This is discussed in the book Brazilian Derivatives and Securities.
 }
 \references{
 Marcos C. S. Carreira and Richard J. Brostowicz.
-            Brazilian Derivatives and Securities, Palgrave Macmillan, 2016
+            "Brazilian Derivatives and Securities", Palgrave Macmillan, 2016
 }
 \author{
 Wilson Freitas \email{wilson.freitas@gmail.com}

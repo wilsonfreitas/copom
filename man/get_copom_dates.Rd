@@ -4,11 +4,23 @@
 \alias{get_copom_dates}
 \title{Historical COPOM dates}
 \usage{
-get_copom_dates()
+get_copom_dates(date = NULL, n = 8)
+}
+\arguments{
+\item{date}{reference date}
+
+\item{n}{number of dates returned
+
+If `date` is `NULL` all dates are returned.
+Once `date` is set, `n` dates greater than or equal to `date` are returned.}
 }
 \value{
 A vector with `Date` objects.
 }
 \description{
 Historical COPOM dates since 2015.
+}
+\examples{
+get_copom_dates()
+get_copom_dates("2022-01-04", 4)
 }
