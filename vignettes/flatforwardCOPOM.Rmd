@@ -11,21 +11,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## flatforwardCOPOM
 
-Start attaching the packages `bizdays`, `fixedincome` and `flatforwardCOPOM`.
-The `bizdays` package must be loaded because the calendar `Brazil/ANBIMA` is
-refferenced and it is attached together with `bizdays`.
-Otherwise the used calendars should be created first.
-
+Start attaching `flatforwardCOPOM`.
 
 ```{r message=FALSE, warning=FALSE}
-library(bizdays)
-library(fixedincome)
 library(flatforwardCOPOM)
 ```
+
+It attachs `bizdays` and `fixedincome`.
 
 ## Create a curve
 
 Let's create by hand the curve to be used in this tutorial.
+You must provide the curve terms and corresponding rates.
+The terms must be provided according to `daycount` used.
 
 ```{r curve}
 terms <- c(1, 3, 25, 44, 66, 87, 108, 131, 152, 172, 192, 214, 236, 277)
@@ -39,16 +37,19 @@ curve <- spotratecurve(
 )
 ```
 
+Here we use the daycount `business/252`, so the terms are business days.
+
 ## Create the FlatForwardCOPOM interpolation
 
-Call `interp_flatforwardcopom` passing a vector with the dates of the meetings
-to be used in the interpolation.
-The `conflicts = "second"` will be used, since there are periods between
-meetings that have two points.
-In this cases, the second point will be used in the interpolation.
+Now we have a curve, we define the interpolation method by creating an
+`Interpolation` object with the function `interp_flatforwardcopom`.
+We pass a vector with the dates of the meetings
+to be used in the interpolation and set `conflicts = "second"`.
+There are periods between meetings that have two points and, in this cases,
+the second point will be used in the interpolation.
 
-Once the Interpolation object is create, it is set to the curve with
-`interpolation<-` method.
+Once the Interpolation object is created, it is set to the curve with
+the `interpolation<-` method.
 
 ```{r}
 copom_dates <- as.Date(
