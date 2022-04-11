@@ -14,7 +14,8 @@ Description: Interpolation of term structures of interest rates that
     the interpolation is used to price private bonds and interest rate
     derivatives.
     The reference on this method is Carreira and Brostowicz (2016 ISBN: 978-1-137-47727-9).
-Imports: bizdays, fixedincome, methods
+Depends: bizdays, fixedincome
+Imports: methods
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
