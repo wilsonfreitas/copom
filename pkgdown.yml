@@ -3,7 +3,7 @@ pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
   flatforwardCOPOM: flatforwardCOPOM.html
-last_built: 2022-04-06T08:26Z
+last_built: 2022-04-11T10:02Z
 urls:
   reference: https://wilsonfreitas.github.io/flatforwardCOPOM/reference
   article: https://wilsonfreitas.github.io/flatforwardCOPOM/articles
