@@ -1,0 +1,124 @@
+---
+title: Interpolação flat-forward nas reuniões do COPOM
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introdução
+
+A estrutura a termo de juros prefixados utilizada no Brasil se apresenta em
+duas versões, a primeira é formada com base nos contratos futuros de Taxa DI
+(DI1) negociados na B3.
+A segunda versão pode ser extraída dos títulos públicos prefixados, negociados
+no Tesouro Direto e que têm preços de referência divulgados na ANBIMA.
+A versão mais utilizada é formada a partir dos contratos futuros de DI1.
+Dessa maneira, os vértices da curva correspondem aos vencimentos dos contratos
+futuros.
+O método de interpolação flat-forward é comumente utilizado para interpolar a
+curva de juros prefixados [REF], e a interpolação é realizada a partir dos
+vencimentos dos futuros.
+Entretanto, na parte curta da curva, referente ao curto prazo, dentro do
+primeiro ano, a dinâmica dos juros é determinada pelo Comitê de Política
+Monetária (COPOM).
+O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua
+vez influencia a taxa DI, utilizada no mercado interbancário.
+Dessa maneira, é esperado que essa taxa de curto prazo mude de nível após as
+reuniões do Comitê.
+Contudo, aplicando a interpolação flat-forward a curva de juros com vencimentos
+dos futuros e calculando as taxas a termo diárias observa-se que as mudanças
+de nível nas taxas de juros ocorrem após cada vértice de vencimento de futuros.
+Logo, temos que, para o curto prazo, a interpolação cria um comportamento
+diferente do que é observado na prática.
+Assim, é necessário realizar a interpolação flat-forward, para a parte curta
+da curva, considerando as reuniões do COPOM, fazendo com que as taxas de juros
+a termo fiquem constante entre as reuniões.
+
+```{r curve, message=FALSE, warning=FALSE}
+library(fixedincome)
+library(flatforwardCOPOM)
+
+terms <- c(1, 3, 25, 44, 66, 87, 108, 131, 152, 172, 192, 214, 236, 277)
+rates <- c(
+  0.1065, 0.1064, 0.111, 0.1138, 0.1168, 0.1189, 0.1207, 0.1219,
+  0.1227, 0.1235, 0.1234, 0.1236, 0.1235, 0.1235
+)
+refdate <- as.Date("2022-02-23")
+curve <- spotratecurve(
+  rates, terms, "discrete", "business/252", "Brazil/ANBIMA",
+  refdate = refdate
+)
+as.data.frame(curve)
+```
+
+```{r}
+dates <- get_copom_dates(refdate)
+du <- bizdays(refdate, dates, "Brazil/ANBIMA")
+plot(curve, show_forward = TRUE, legend_location = 0)
+abline(v = du, lty = "dashed", lwd = 2, col = "#08d37eb6")
+```
+
+
+```{r}
+curve <- first(curve, "6 months")
+plot(curve, show_forward = TRUE, legend_location = 0)
+abline(v = du, lty = "dashed", lwd = 2, col = "#08d37eb6")
+```
+
+
+
+It attachs `bizdays` and `fixedincome`.
+
+## Create a curve
+
+Let's create by hand the curve to be used in this tutorial.
+You must provide the curve terms and corresponding rates.
+The terms must be provided according to `daycount` used.
+
+Here we use the daycount `business/252`, so the terms are business days.
+
+## Create the FlatForwardCOPOM interpolation
+
+Now we have a curve, we define the interpolation method by creating an
+`Interpolation` object with the function `interp_flatforwardcopom`.
+We pass a vector with the dates of the meetings
+to be used in the interpolation and set `conflicts = "second"`.
+There are periods between meetings that have two points and, in this cases,
+the second point will be used in the interpolation.
+
+Once the Interpolation object is created, it is set to the curve with
+the `interpolation<-` method.
+
+```{r}
+copom_dates <- as.Date(
+  c("2022-03-17", "2022-05-05", "2022-06-17", "2022-08-04")
+)
+interpolation(curve) <- interp_flatforwardcopom(copom_dates, "second")
+```
+
+## Visualize the interpolation
+
+With everything set the curve can be easily viewed with `plot`.
+
+```{r plot}
+plot(curve,
+  use_interpolation = TRUE, show_forward = TRUE,
+  legend_location = "bottomright"
+)
+```
+
+To compare with the flat forward interpolation let's visualize the curve with 
+this different intepolation.
+
+```{r}
+interpolation(curve) <- interp_flatforward()
+plot(curve,
+  use_interpolation = TRUE, show_forward = TRUE,
+  legend_location = "bottomright"
+)
+```
+
+In the long term there isn't mush difference, but in the short term the
+interpolated points and the forward rates are fairly different.

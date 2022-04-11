@@ -1,7 +1,5 @@
 ---
 title: "Introduction to flatforwardCOPOM"
-author: "Wilson Freitas"
-date: "12/03/2022"
 output: html_document
 ---
 
