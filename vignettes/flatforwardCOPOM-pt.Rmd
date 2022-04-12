@@ -8,6 +8,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Resumo
+
+O objetivo deste artigo é apresentar uma metodologia para a interpolação de uma
+curva de juros considerando as datas de reuniões do Comitê de Política
+Monetária (COPOM) como vértices e consequentemente o seu efeito nas taxas
+de juros a termo diárias.
+
+
 ## Introdução
 
 A estrutura a termo de juros prefixados utilizada no Brasil se apresenta em
@@ -23,8 +31,7 @@ O método de interpolação flat-forward [@hagan2006interpolation] é comumente
 utilizado para interpolar a curva de juros prefixados, e a interpolação é
 realizada a partir dos vencimentos dos futuros.
 Entretanto, na parte curta da curva, referente ao curto prazo, dentro do
-primeiro ano, a dinâmica dos juros é determinada pelo Comitê de Política
-Monetária (COPOM).
+primeiro ano, a dinâmica dos juros é determinada pelo COPOM.
 
 O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua
 vez influencia a taxa DI, utilizada no mercado interbancário.
@@ -67,8 +74,10 @@ em vermelho).
 
 ```{r}
 fwd_curve <- curve[[1:277]] |> forwardrate()
-plot(1:277, fwd_curve * 100, type = "l", col = "blue",
-     xlab = "", ylab = "", main = "Curva de Juros Diários a Termo")
+plot(1:277, fwd_curve * 100,
+  type = "l", col = "blue",
+  xlab = "", ylab = "", main = "Curva de Juros Diários a Termo"
+)
 dates <- get_copom_dates(refdate)
 copom_du <- bizdays(refdate, dates, "Brazil/ANBIMA")
 abline(v = copom_du, lty = "dashed", col = "red")
@@ -105,6 +114,10 @@ títulos públicos e adicionalmente submete-se a este processo os contratos
 futuros, com o objetivo de comparar com a metodologia anterior.
 No fim temos a comparação dos resultados das diferentes abordagens e a
 conclusão.
+
+## Modelo Teórico
+
+
 
 It attachs `bizdays` and `fixedincome`.
 
