@@ -1,5 +1,6 @@
 ---
 title: Interpolação flat-forward nas reuniões do COPOM
+bibliography: references.bib
 output: html_document
 ---
 
@@ -17,57 +18,93 @@ no Tesouro Direto e que têm preços de referência divulgados na ANBIMA.
 A versão mais utilizada é formada a partir dos contratos futuros de DI1.
 Dessa maneira, os vértices da curva correspondem aos vencimentos dos contratos
 futuros.
-O método de interpolação flat-forward é comumente utilizado para interpolar a
-curva de juros prefixados [REF], e a interpolação é realizada a partir dos
-vencimentos dos futuros.
+
+O método de interpolação flat-forward [@hagan2006interpolation] é comumente
+utilizado para interpolar a curva de juros prefixados, e a interpolação é
+realizada a partir dos vencimentos dos futuros.
 Entretanto, na parte curta da curva, referente ao curto prazo, dentro do
 primeiro ano, a dinâmica dos juros é determinada pelo Comitê de Política
 Monetária (COPOM).
+
 O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua
 vez influencia a taxa DI, utilizada no mercado interbancário.
-Dessa maneira, é esperado que essa taxa de curto prazo mude de nível após as
+Dessa maneira, é esperado que esta taxa de curto prazo mude de nível após as
 reuniões do Comitê.
 Contudo, aplicando a interpolação flat-forward a curva de juros com vencimentos
 dos futuros e calculando as taxas a termo diárias observa-se que as mudanças
-de nível nas taxas de juros ocorrem após cada vértice de vencimento de futuros.
-Logo, temos que, para o curto prazo, a interpolação cria um comportamento
-diferente do que é observado na prática.
+de nível nas taxas de juros, geradas pela interpolação,
+ocorrem após cada vértice de vencimento de futuros.
+Portanto, temos que, para o curto prazo, a interpolação cria um comportamento
+diferente do que é observado.
 Assim, é necessário realizar a interpolação flat-forward, para a parte curta
-da curva, considerando as reuniões do COPOM, fazendo com que as taxas de juros
-a termo fiquem constante entre as reuniões.
+da curva, considerando as reuniões do COPOM [@carreira2016brazilian],
+fazendo com que as taxas de juros a termo fiquem constante entre as reuniões.
+
+Vamos construir um exemplo com a curva de juros prefixados para a data de
+referência 23/02/2022.
+Neste exemplo vamos observar as taxas a termo e as datas de reunião do COPOM.
 
 ```{r curve, message=FALSE, warning=FALSE}
 library(fixedincome)
 library(flatforwardCOPOM)
 
+refdate <- as.Date("2022-02-23")
 terms <- c(1, 3, 25, 44, 66, 87, 108, 131, 152, 172, 192, 214, 236, 277)
 rates <- c(
   0.1065, 0.1064, 0.111, 0.1138, 0.1168, 0.1189, 0.1207, 0.1219,
   0.1227, 0.1235, 0.1234, 0.1236, 0.1235, 0.1235
 )
-refdate <- as.Date("2022-02-23")
 curve <- spotratecurve(
   rates, terms, "discrete", "business/252", "Brazil/ANBIMA",
   refdate = refdate
 )
-as.data.frame(curve)
+interpolation(curve) <- interp_flatforward()
 ```
 
+Aqui criamos a curva e abaixo construímos o gráfico com as taxas de juros
+diários a termo (linha azul) e destacamos as datas de reunião (linha pontilhada
+em vermelho).
+
 ```{r}
+fwd_curve <- curve[[1:277]] |> forwardrate()
+plot(1:277, fwd_curve * 100, type = "l", col = "blue",
+     xlab = "", ylab = "", main = "Curva de Juros Diários a Termo")
 dates <- get_copom_dates(refdate)
-du <- bizdays(refdate, dates, "Brazil/ANBIMA")
-plot(curve, show_forward = TRUE, legend_location = 0)
-abline(v = du, lty = "dashed", lwd = 2, col = "#08d37eb6")
+copom_du <- bizdays(refdate, dates, "Brazil/ANBIMA")
+abline(v = copom_du, lty = "dashed", col = "red")
 ```
 
+No gráfico observasse que as mudanças de nível das taxas a termo ocorrem entre
+duas reuniões, o que sabemos que não ser o comportamento esperado para taxas no
+curto prazo.
 
-```{r}
-curve <- first(curve, "6 months")
-plot(curve, show_forward = TRUE, legend_location = 0)
-abline(v = du, lty = "dashed", lwd = 2, col = "#08d37eb6")
-```
+Dessa maneira buscam-se formas de realizar uma interpolação que, na parte curta
+da curva, as taxas a termo apresentem mudança de nível apenas nas reuniões do
+comitê.
 
+Vamos considerar as reuniões que acontecem no horizonte de um
+ano nesta abordagem, e dado que estas reuniões acontecem a cada 45 dias,
+aproximadamente, teremos 8 reuniões em média neste intervalo.
 
+Esta metodologia foi abordada em [@carreira2016brazilian], onde os contratos
+futuros são considerados da curva de juros a interpolação considerando as
+reuniões se baseia nas relações de não arbitragem das taxas a termo e
+[@varga2020fitting] utiliza contratos de
+títulos públicos prefixados em um processo de otimização que
+visa minimizar o erro no apreçamento destes contratos utilizando uma estrutura
+a termo que apresenta mudança de nível nas reuniões.
+
+O objetivo aqui é trazer a implementação destas abordagens, trazendo a luz as
+peculiaridades que se apresentam e as eventuais alternativas para contorná-las.
+
+Na próxima sessão será apresentada a metodologia de interpolação *flat-forward*
+considerando as reuniões do COPOM, os casos particulares e as alternativas de
+solução.
+A sessão seguinte aborda o processo que minimiza do erro de apreçamento dos
+títulos públicos e adicionalmente submete-se a este processo os contratos
+futuros, com o objetivo de comparar com a metodologia anterior.
+No fim temos a comparação dos resultados das diferentes abordagens e a
+conclusão.
 
 It attachs `bizdays` and `fixedincome`.
 
@@ -122,3 +159,5 @@ plot(curve,
 
 In the long term there isn't mush difference, but in the short term the
 interpolated points and the forward rates are fairly different.
+
+## Referências
