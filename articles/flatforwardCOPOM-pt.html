@@ -85,10 +85,15 @@
     
     
 <div class="section level2">
+<h2 id="resumo">Resumo<a class="anchor" aria-label="anchor" href="#resumo"></a>
+</h2>
+<p>O objetivo deste artigo é apresentar uma metodologia para a interpolação de uma curva de juros considerando as datas de reuniões do Comitê de Política Monetária (COPOM) como vértices e consequentemente o seu efeito nas taxas de juros a termo diárias.</p>
+</div>
+<div class="section level2">
 <h2 id="introdução">Introdução<a class="anchor" aria-label="anchor" href="#introdu%C3%A7%C3%A3o"></a>
 </h2>
 <p>A estrutura a termo de juros prefixados utilizada no Brasil se apresenta em duas versões, a primeira é formada com base nos contratos futuros de Taxa DI (DI1) negociados na B3. A segunda versão pode ser extraída dos títulos públicos prefixados, negociados no Tesouro Direto e que têm preços de referência divulgados na ANBIMA. A versão mais utilizada é formada a partir dos contratos futuros de DI1. Dessa maneira, os vértices da curva correspondem aos vencimentos dos contratos futuros.</p>
-<p>O método de interpolação flat-forward <span class="citation">(Hagan and West 2006)</span> é comumente utilizado para interpolar a curva de juros prefixados, e a interpolação é realizada a partir dos vencimentos dos futuros. Entretanto, na parte curta da curva, referente ao curto prazo, dentro do primeiro ano, a dinâmica dos juros é determinada pelo Comitê de Política Monetária (COPOM).</p>
+<p>O método de interpolação flat-forward <span class="citation">(Hagan and West 2006)</span> é comumente utilizado para interpolar a curva de juros prefixados, e a interpolação é realizada a partir dos vencimentos dos futuros. Entretanto, na parte curta da curva, referente ao curto prazo, dentro do primeiro ano, a dinâmica dos juros é determinada pelo COPOM.</p>
 <p>O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua vez influencia a taxa DI, utilizada no mercado interbancário. Dessa maneira, é esperado que esta taxa de curto prazo mude de nível após as reuniões do Comitê. Contudo, aplicando a interpolação flat-forward a curva de juros com vencimentos dos futuros e calculando as taxas a termo diárias observa-se que as mudanças de nível nas taxas de juros, geradas pela interpolação, ocorrem após cada vértice de vencimento de futuros. Portanto, temos que, para o curto prazo, a interpolação cria um comportamento diferente do que é observado. Assim, é necessário realizar a interpolação flat-forward, para a parte curta da curva, considerando as reuniões do COPOM <span class="citation">(Carreira and Brostowicz Jr 2016)</span>, fazendo com que as taxas de juros a termo fiquem constante entre as reuniões.</p>
 <p>Vamos construir um exemplo com a curva de juros prefixados para a data de referência 23/02/2022. Neste exemplo vamos observar as taxas a termo e as datas de reunião do COPOM.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -109,8 +114,10 @@
 <p>Aqui criamos a curva e abaixo construímos o gráfico com as taxas de juros diários a termo (linha azul) e destacamos as datas de reunião (linha pontilhada em vermelho).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fwd_curve</span> <span class="op">&lt;-</span> <span class="va">curve</span><span class="op">[[</span><span class="fl">1</span><span class="op">:</span><span class="fl">277</span><span class="op">]</span><span class="op">]</span> |&gt; <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/forwardrate.html" class="external-link">forwardrate</a></span><span class="op">(</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">277</span>, <span class="va">fwd_curve</span> <span class="op">*</span> <span class="fl">100</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"blue"</span>,
-     xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, main <span class="op">=</span> <span class="st">"Curva de Juros Diários a Termo"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">277</span>, <span class="va">fwd_curve</span> <span class="op">*</span> <span class="fl">100</span>,
+  type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"blue"</span>,
+  xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, main <span class="op">=</span> <span class="st">"Curva de Juros Diários a Termo"</span>
+<span class="op">)</span>
 <span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_copom_dates.html">get_copom_dates</a></span><span class="op">(</span><span class="va">refdate</span><span class="op">)</span>
 <span class="va">copom_du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">dates</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="va">copom_du</span>, lty <span class="op">=</span> <span class="st">"dashed"</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></code></pre></div>
@@ -121,6 +128,10 @@
 <p>Esta metodologia foi abordada em <span class="citation">(Carreira and Brostowicz Jr 2016)</span>, onde os contratos futuros são considerados da curva de juros a interpolação considerando as reuniões se baseia nas relações de não arbitragem das taxas a termo e <span class="citation">(Varga 2020)</span> utiliza contratos de títulos públicos prefixados em um processo de otimização que visa minimizar o erro no apreçamento destes contratos utilizando uma estrutura a termo que apresenta mudança de nível nas reuniões.</p>
 <p>O objetivo aqui é trazer a implementação destas abordagens, trazendo a luz as peculiaridades que se apresentam e as eventuais alternativas para contorná-las.</p>
 <p>Na próxima sessão será apresentada a metodologia de interpolação <em>flat-forward</em> considerando as reuniões do COPOM, os casos particulares e as alternativas de solução. A sessão seguinte aborda o processo que minimiza do erro de apreçamento dos títulos públicos e adicionalmente submete-se a este processo os contratos futuros, com o objetivo de comparar com a metodologia anterior. No fim temos a comparação dos resultados das diferentes abordagens e a conclusão.</p>
+</div>
+<div class="section level2">
+<h2 id="modelo-teórico">Modelo Teórico<a class="anchor" aria-label="anchor" href="#modelo-te%C3%B3rico"></a>
+</h2>
 <p>It attachs <code>bizdays</code> and <code>fixedincome</code>.</p>
 </div>
 <div class="section level2">
