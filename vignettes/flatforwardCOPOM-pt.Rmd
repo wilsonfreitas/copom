@@ -13,47 +13,79 @@ knitr::opts_chunk$set(echo = TRUE)
 O objetivo deste artigo é apresentar uma metodologia para a interpolação de uma
 curva de juros considerando as datas de reuniões do Comitê de Política
 Monetária (COPOM) como vértices e consequentemente o seu efeito nas taxas
-de juros a termo diárias.
+de juros de 1 dia a termo.
 
 
 ## Introdução
 
-A estrutura a termo de juros prefixados utilizada no Brasil se apresenta em
-duas versões, a primeira é formada com base nos contratos futuros de Taxa DI
-(DI1) negociados na B3.
+A estrutura a termo de juros prefixados utilizada no Brasil se apresenta de
+duas formas, sem caixa e com caixa, a primeira é formada com base nos contratos
+futuros de Taxa DI (DI1) negociados na B3.
 A segunda versão pode ser extraída dos títulos públicos prefixados, negociados
 no Tesouro Direto e que têm preços de referência divulgados na ANBIMA.
-A versão mais utilizada é formada a partir dos contratos futuros de DI1.
+A versão mais utilizada é a sem caixa, formada a partir dos contratos futuros
+de DI1.
 Dessa maneira, os vértices da curva correspondem aos vencimentos dos contratos
 futuros.
 
 O método de interpolação flat-forward [@hagan2006interpolation] é comumente
 utilizado para interpolar a curva de juros prefixados, e a interpolação é
 realizada a partir dos vencimentos dos futuros.
-Entretanto, na parte curta da curva, referente ao curto prazo, dentro do
-primeiro ano, a dinâmica dos juros é determinada pelo COPOM.
+Entretanto, na parte curta da curva, tipicamente dentro do primeiro ano,
+a dinâmica dos juros é determinada pelo COPOM.
+No gráfico abaixo temos um histórico da taxa de juros SELIC Meta
+definida pelo COPOM.
+O histórico vai de fevereiro de 2021 a fevereiro de 2022 e compreende 8 reuniões
+do comitê.
+No gráfico a taxa de juros SELIC Meta definida está em azul e as datas das
+reuniões são representadas pelas linhas tracejadas em vermelho.
+Observando o gráfico com a SELIC Meta fica evidente que a dinâmica das taxas
+de juros de curto prazo é determinada pelo COPOM.
+
+```{r seta-plot, fig.cap="Taxa de juros SELIC Meta."}
+library(flatforwardCOPOM)
+
+refdate <- as.Date("2021-02-01")
+seta <- rbcb::get_series(c(SELIC = 432),
+  start_date = refdate,
+  end_date = "2022-02-23"
+)
+du <- bizdays(refdate, seta$date, "Brazil/ANBIMA")
+plot(du, seta$SELIC,
+  type = "l", col = "blue",
+  xlab = "Dias úteis", ylab = "Taxa de Juros (%)",
+  main = "Taxa de juros - Meta Selic definida pelo Copom"
+)
+dates <- get_copom_dates("2021-02-01", 8)
+copom_du <- bizdays(refdate, dates, "Brazil/ANBIMA")
+abline(v = copom_du, lty = "dashed", col = "red")
+```
 
 O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua
 vez influencia a taxa DI, utilizada no mercado interbancário.
-Dessa maneira, é esperado que esta taxa de curto prazo mude de nível após as
-reuniões do Comitê.
+Dessa maneira, é esperado que esta taxa DI mude de nível após as reuniões do
+Comitê.
 Contudo, aplicando a interpolação flat-forward a curva de juros com vencimentos
-dos futuros e calculando as taxas a termo diárias observa-se que as mudanças
+dos futuros e calculando as taxas a termo de 1 dia, observa-se que as mudanças
 de nível nas taxas de juros, geradas pela interpolação,
 ocorrem após cada vértice de vencimento de futuros.
 Portanto, temos que, para o curto prazo, a interpolação cria um comportamento
 diferente do que é observado.
-Assim, é necessário realizar a interpolação flat-forward, para a parte curta
+Assim, é necessário realizar uma interpolação flat-forward, para a parte curta
 da curva, considerando as reuniões do COPOM [@carreira2016brazilian],
 fazendo com que as taxas de juros a termo fiquem constante entre as reuniões.
 
 Vamos construir um exemplo com a curva de juros prefixados para a data de
 referência 23/02/2022.
-Neste exemplo vamos observar as taxas a termo e as datas de reunião do COPOM.
+Neste exemplo vamos construir uma estrutura a termo de juros a vista
+(classe `spotratecurve`) e definir a interpolação *flat-forward* para essa
+curva.
+Em seguida vamos calcular as taxas de juros a termo de 1 dia e visualizar em
+um gráfico as mudanças de nível nas taxas a termo junto com as datas de reuniões
+do COPOM.
 
 ```{r curve, message=FALSE, warning=FALSE}
 library(fixedincome)
-library(flatforwardCOPOM)
 
 refdate <- as.Date("2022-02-23")
 terms <- c(1, 3, 25, 44, 66, 87, 108, 131, 152, 172, 192, 214, 236, 277)
@@ -68,24 +100,27 @@ curve <- spotratecurve(
 interpolation(curve) <- interp_flatforward()
 ```
 
-Aqui criamos a curva e abaixo construímos o gráfico com as taxas de juros
-diários a termo (linha azul) e destacamos as datas de reunião (linha pontilhada
-em vermelho).
+Aqui criamos a estrutura a termo e abaixo construímos o gráfico com as taxas de
+juros a termo de 1 dia (linha azul) e destacamos as datas de reuniões do
+comitê (linhas pontilhadas em vermelho).
 
 ```{r}
 fwd_curve <- curve[[1:277]] |> forwardrate()
 plot(1:277, fwd_curve * 100,
   type = "l", col = "blue",
-  xlab = "", ylab = "", main = "Curva de Juros Diários a Termo"
+  xlab = "Dias úteis", ylab = "Taxa de Juros (%)",
+  main = "Curva de Juros Diários a Termo"
 )
 dates <- get_copom_dates(refdate)
 copom_du <- bizdays(refdate, dates, "Brazil/ANBIMA")
 abline(v = copom_du, lty = "dashed", col = "red")
 ```
 
-No gráfico observasse que as mudanças de nível das taxas a termo ocorrem entre
-duas reuniões, o que sabemos que não ser o comportamento esperado para taxas no
+No gráfico observa-se que as mudanças de nível das taxas a termo ocorrem entre
+duas reuniões, o que sabemos que não é o comportamento esperado para taxas no
 curto prazo.
+Em alguns casos, entre as duas primeiras reuniões, temos duas mudanças de nível
+entre as reuniões.
 
 Dessa maneira buscam-se formas de realizar uma interpolação que, na parte curta
 da curva, as taxas a termo apresentem mudança de nível apenas nas reuniões do
@@ -107,70 +142,71 @@ O objetivo aqui é trazer a implementação destas abordagens, trazendo a luz as
 peculiaridades que se apresentam e as eventuais alternativas para contorná-las.
 
 Na próxima sessão será apresentada a metodologia de interpolação *flat-forward*
-considerando as reuniões do COPOM, os casos particulares e as alternativas de
-solução.
+e a extensão que considera as reuniões do COPOM, os casos particulares e as
+alternativas de solução.
 A sessão seguinte aborda o processo que minimiza do erro de apreçamento dos
 títulos públicos e adicionalmente submete-se a este processo os contratos
 futuros, com o objetivo de comparar com a metodologia anterior.
 No fim temos a comparação dos resultados das diferentes abordagens e a
 conclusão.
 
-## Modelo Teórico
+## Interpolação *flat-forward*
 
+A interpolação flat-forward considera que a taxa a termo entre dois vértices
+é constante, por isso *flat-forward*.
 
+Sejam os vértices $t_1$ e $t_2$ ($t_2 > t_1$) com as respectivas taxas de juros
+a vista $r_1$ e $r_2$.
+A taxa de juros a termo $r_{12}$ entre os vértices $t_1$ e $t_2$ é obtida da
+equação:
 
-It attachs `bizdays` and `fixedincome`.
+$$
+(1 + r_{12})^{t_2 - t_1} = \frac{(1 + r_{2})^{t_2}}{(1 + r_{1})^{t_1}}
+$$
 
-## Create a curve
+De acordo com essa abordagem, para se obter uma taxa a vista $r$ em um vértice
+$t$, tal que $t_1 < t < t_2$, considera-se a composição da taxa a vista em
+$t_1$ com a taxa $r_{12}$ entre $t_1$ e $t$.
 
-Let's create by hand the curve to be used in this tutorial.
-You must provide the curve terms and corresponding rates.
-The terms must be provided according to `daycount` used.
+$$
+(1 + r)^t = (1 + r_{2})^{t_2} (1 + r_{12})^{t - t_1}
+$$
 
-Here we use the daycount `business/252`, so the terms are business days.
+consequentemente
 
-## Create the FlatForwardCOPOM interpolation
+$$
+r = \left( (1 + r_{2})^{t_2} (1 + r_{12})^{t - t_1} \right)^{\frac{1}{t}} - 1
+$$
 
-Now we have a curve, we define the interpolation method by creating an
-`Interpolation` object with the function `interp_flatforwardcopom`.
-We pass a vector with the dates of the meetings
-to be used in the interpolation and set `conflicts = "second"`.
-There are periods between meetings that have two points and, in this cases,
-the second point will be used in the interpolation.
+Seguindo essa metodologia, o valor das taxas a termo de 1 dia entre os vértices
+$t_1$ e $t_2$ é $r_{12}$, uma vez que:
 
-Once the Interpolation object is created, it is set to the curve with
-the `interpolation<-` method.
+$$
+(1 + r_{12})^{t_2 - t_1} = \prod_{i = t_1}^{t_2} (1 + r_{12})
+$$
 
-```{r}
-copom_dates <- as.Date(
-  c("2022-03-17", "2022-05-05", "2022-06-17", "2022-08-04")
-)
-interpolation(curve) <- interp_flatforwardcopom(copom_dates, "second")
-```
+O desafio aqui é construir uma interpolação *flat-forward* entre as datas do
+COPOM que, de preferência, mantenha as taxas a vista nos vencimentos dos
+futuros.
+De forma que o valor obtido dessa nova interpolação nos vencimentos dos
+futuros seja igual, ou muito próximo, às taxas a vista dos futuros.
+Veremos que não é possível garantir isso para todos os vértices e para lidar
+com estes casos particulares seram propostas diferentes abordagens cada uma
+com sua motivação.
 
-## Visualize the interpolation
+Para construir uma interpolação *flat-forward* entre as reuniões do COPOM
+será proposta uma metodologia que reconstroi a estrutura a termo a vista
+compondo as taxas a termo de 1 dia.
+Dessa maneira a estrutura a termo é construída a cada reunião considerando as
+taxas compostas até a última reunião.
+Na próxima sessão será abordada a construção dessa interpolação trecho a trecho
+começando pela taxa DI de 1 dia até a última reunião considerada no horizonte
+de análise.
 
-With everything set the curve can be easily viewed with `plot`.
+## Interpolação *flat-forward* entre reuniões do COPOM
 
-```{r plot}
-plot(curve,
-  use_interpolation = TRUE, show_forward = TRUE,
-  legend_location = "bottomright"
-)
-```
+### O começo
 
-To compare with the flat forward interpolation let's visualize the curve with 
-this different intepolation.
-
-```{r}
-interpolation(curve) <- interp_flatforward()
-plot(curve,
-  use_interpolation = TRUE, show_forward = TRUE,
-  legend_location = "bottomright"
-)
-```
-
-In the long term there isn't mush difference, but in the short term the
-interpolated points and the forward rates are fairly different.
+Tudo começa na taxa DI de 1 dia.
 
 ## Referências
