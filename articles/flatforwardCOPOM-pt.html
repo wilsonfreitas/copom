@@ -87,18 +87,39 @@
 <div class="section level2">
 <h2 id="resumo">Resumo<a class="anchor" aria-label="anchor" href="#resumo"></a>
 </h2>
-<p>O objetivo deste artigo é apresentar uma metodologia para a interpolação de uma curva de juros considerando as datas de reuniões do Comitê de Política Monetária (COPOM) como vértices e consequentemente o seu efeito nas taxas de juros a termo diárias.</p>
+<p>O objetivo deste artigo é apresentar uma metodologia para a interpolação de uma curva de juros considerando as datas de reuniões do Comitê de Política Monetária (COPOM) como vértices e consequentemente o seu efeito nas taxas de juros de 1 dia a termo.</p>
 </div>
 <div class="section level2">
 <h2 id="introdução">Introdução<a class="anchor" aria-label="anchor" href="#introdu%C3%A7%C3%A3o"></a>
 </h2>
-<p>A estrutura a termo de juros prefixados utilizada no Brasil se apresenta em duas versões, a primeira é formada com base nos contratos futuros de Taxa DI (DI1) negociados na B3. A segunda versão pode ser extraída dos títulos públicos prefixados, negociados no Tesouro Direto e que têm preços de referência divulgados na ANBIMA. A versão mais utilizada é formada a partir dos contratos futuros de DI1. Dessa maneira, os vértices da curva correspondem aos vencimentos dos contratos futuros.</p>
-<p>O método de interpolação flat-forward <span class="citation">(Hagan and West 2006)</span> é comumente utilizado para interpolar a curva de juros prefixados, e a interpolação é realizada a partir dos vencimentos dos futuros. Entretanto, na parte curta da curva, referente ao curto prazo, dentro do primeiro ano, a dinâmica dos juros é determinada pelo COPOM.</p>
-<p>O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua vez influencia a taxa DI, utilizada no mercado interbancário. Dessa maneira, é esperado que esta taxa de curto prazo mude de nível após as reuniões do Comitê. Contudo, aplicando a interpolação flat-forward a curva de juros com vencimentos dos futuros e calculando as taxas a termo diárias observa-se que as mudanças de nível nas taxas de juros, geradas pela interpolação, ocorrem após cada vértice de vencimento de futuros. Portanto, temos que, para o curto prazo, a interpolação cria um comportamento diferente do que é observado. Assim, é necessário realizar a interpolação flat-forward, para a parte curta da curva, considerando as reuniões do COPOM <span class="citation">(Carreira and Brostowicz Jr 2016)</span>, fazendo com que as taxas de juros a termo fiquem constante entre as reuniões.</p>
-<p>Vamos construir um exemplo com a curva de juros prefixados para a data de referência 23/02/2022. Neste exemplo vamos observar as taxas a termo e as datas de reunião do COPOM.</p>
+<p>A estrutura a termo de juros prefixados utilizada no Brasil se apresenta de duas formas, sem caixa e com caixa, a primeira é formada com base nos contratos futuros de Taxa DI (DI1) negociados na B3. A segunda versão pode ser extraída dos títulos públicos prefixados, negociados no Tesouro Direto e que têm preços de referência divulgados na ANBIMA. A versão mais utilizada é a sem caixa, formada a partir dos contratos futuros de DI1. Dessa maneira, os vértices da curva correspondem aos vencimentos dos contratos futuros.</p>
+<p>O método de interpolação flat-forward <span class="citation">(Hagan and West 2006)</span> é comumente utilizado para interpolar a curva de juros prefixados, e a interpolação é realizada a partir dos vencimentos dos futuros. Entretanto, na parte curta da curva, tipicamente dentro do primeiro ano, a dinâmica dos juros é determinada pelo COPOM. No gráfico abaixo temos um histórico da taxa de juros SELIC Meta definida pelo COPOM. O histórico vai de fevereiro de 2021 a fevereiro de 2022 e compreende 8 reuniões do comitê. No gráfico a taxa de juros SELIC Meta definida está em azul e as datas das reuniões são representadas pelas linhas tracejadas em vermelho. Observando o gráfico com a SELIC Meta fica evidente que a dinâmica das taxas de juros de curto prazo é determinada pelo COPOM.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilsonfreitas.github.io/flatforwardCOPOM/">flatforwardCOPOM</a></span><span class="op">)</span>
+
+<span class="va">refdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2021-02-01"</span><span class="op">)</span>
+<span class="va">seta</span> <span class="op">&lt;-</span> <span class="fu">rbcb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rbcb/man/get_series.html" class="external-link">get_series</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>SELIC <span class="op">=</span> <span class="fl">432</span><span class="op">)</span>,
+  start_date <span class="op">=</span> <span class="va">refdate</span>,
+  end_date <span class="op">=</span> <span class="st">"2022-02-23"</span>
+<span class="op">)</span>
+<span class="va">du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">seta</span><span class="op">$</span><span class="va">date</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">du</span>, <span class="va">seta</span><span class="op">$</span><span class="va">SELIC</span>,
+  type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"blue"</span>,
+  xlab <span class="op">=</span> <span class="st">"Dias úteis"</span>, ylab <span class="op">=</span> <span class="st">"Taxa de Juros (%)"</span>,
+  main <span class="op">=</span> <span class="st">"Taxa de juros - Meta Selic definida pelo Copom"</span>
+<span class="op">)</span>
+<span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_copom_dates.html">get_copom_dates</a></span><span class="op">(</span><span class="st">"2021-02-01"</span>, <span class="fl">8</span><span class="op">)</span>
+<span class="va">copom_du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">dates</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="va">copom_du</span>, lty <span class="op">=</span> <span class="st">"dashed"</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="flatforwardCOPOM-pt_files/figure-html/seta-plot-1.png" alt="Taxa de juros SELIC Meta." width="700"><p class="caption">
+Taxa de juros SELIC Meta.
+</p>
+</div>
+<p>O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua vez influencia a taxa DI, utilizada no mercado interbancário. Dessa maneira, é esperado que esta taxa DI mude de nível após as reuniões do Comitê. Contudo, aplicando a interpolação flat-forward a curva de juros com vencimentos dos futuros e calculando as taxas a termo de 1 dia, observa-se que as mudanças de nível nas taxas de juros, geradas pela interpolação, ocorrem após cada vértice de vencimento de futuros. Portanto, temos que, para o curto prazo, a interpolação cria um comportamento diferente do que é observado. Assim, é necessário realizar uma interpolação flat-forward, para a parte curta da curva, considerando as reuniões do COPOM <span class="citation">(Carreira and Brostowicz Jr 2016)</span>, fazendo com que as taxas de juros a termo fiquem constante entre as reuniões.</p>
+<p>Vamos construir um exemplo com a curva de juros prefixados para a data de referência 23/02/2022. Neste exemplo vamos construir uma estrutura a termo de juros a vista (classe <code>spotratecurve</code>) e definir a interpolação <em>flat-forward</em> para essa curva. Em seguida vamos calcular as taxas de juros a termo de 1 dia e visualizar em um gráfico as mudanças de nível nas taxas a termo junto com as datas de reuniões do COPOM.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/wilsonfreitas/R-fixedincome" class="external-link">fixedincome</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilsonfreitas.github.io/flatforwardCOPOM/">flatforwardCOPOM</a></span><span class="op">)</span>
 
 <span class="va">refdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2022-02-23"</span><span class="op">)</span>
 <span class="va">terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">25</span>, <span class="fl">44</span>, <span class="fl">66</span>, <span class="fl">87</span>, <span class="fl">108</span>, <span class="fl">131</span>, <span class="fl">152</span>, <span class="fl">172</span>, <span class="fl">192</span>, <span class="fl">214</span>, <span class="fl">236</span>, <span class="fl">277</span><span class="op">)</span>
@@ -111,65 +132,100 @@
   refdate <span class="op">=</span> <span class="va">refdate</span>
 <span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation.html" class="external-link">interpolation</a></span><span class="op">(</span><span class="va">curve</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation-constructor.html" class="external-link">interp_flatforward</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<p>Aqui criamos a curva e abaixo construímos o gráfico com as taxas de juros diários a termo (linha azul) e destacamos as datas de reunião (linha pontilhada em vermelho).</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>Aqui criamos a estrutura a termo e abaixo construímos o gráfico com as taxas de juros a termo de 1 dia (linha azul) e destacamos as datas de reuniões do comitê (linhas pontilhadas em vermelho).</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fwd_curve</span> <span class="op">&lt;-</span> <span class="va">curve</span><span class="op">[[</span><span class="fl">1</span><span class="op">:</span><span class="fl">277</span><span class="op">]</span><span class="op">]</span> |&gt; <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/forwardrate.html" class="external-link">forwardrate</a></span><span class="op">(</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">277</span>, <span class="va">fwd_curve</span> <span class="op">*</span> <span class="fl">100</span>,
   type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"blue"</span>,
-  xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, main <span class="op">=</span> <span class="st">"Curva de Juros Diários a Termo"</span>
+  xlab <span class="op">=</span> <span class="st">"Dias úteis"</span>, ylab <span class="op">=</span> <span class="st">"Taxa de Juros (%)"</span>,
+  main <span class="op">=</span> <span class="st">"Curva de Juros Diários a Termo"</span>
 <span class="op">)</span>
 <span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_copom_dates.html">get_copom_dates</a></span><span class="op">(</span><span class="va">refdate</span><span class="op">)</span>
 <span class="va">copom_du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">dates</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="va">copom_du</span>, lty <span class="op">=</span> <span class="st">"dashed"</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></code></pre></div>
 <p><img src="flatforwardCOPOM-pt_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
-<p>No gráfico observasse que as mudanças de nível das taxas a termo ocorrem entre duas reuniões, o que sabemos que não ser o comportamento esperado para taxas no curto prazo.</p>
+<p>No gráfico observa-se que as mudanças de nível das taxas a termo ocorrem entre duas reuniões, o que sabemos que não é o comportamento esperado para taxas no curto prazo. Em alguns casos, entre as duas primeiras reuniões, temos duas mudanças de nível entre as reuniões.</p>
 <p>Dessa maneira buscam-se formas de realizar uma interpolação que, na parte curta da curva, as taxas a termo apresentem mudança de nível apenas nas reuniões do comitê.</p>
 <p>Vamos considerar as reuniões que acontecem no horizonte de um ano nesta abordagem, e dado que estas reuniões acontecem a cada 45 dias, aproximadamente, teremos 8 reuniões em média neste intervalo.</p>
 <p>Esta metodologia foi abordada em <span class="citation">(Carreira and Brostowicz Jr 2016)</span>, onde os contratos futuros são considerados da curva de juros a interpolação considerando as reuniões se baseia nas relações de não arbitragem das taxas a termo e <span class="citation">(Varga 2020)</span> utiliza contratos de títulos públicos prefixados em um processo de otimização que visa minimizar o erro no apreçamento destes contratos utilizando uma estrutura a termo que apresenta mudança de nível nas reuniões.</p>
 <p>O objetivo aqui é trazer a implementação destas abordagens, trazendo a luz as peculiaridades que se apresentam e as eventuais alternativas para contorná-las.</p>
-<p>Na próxima sessão será apresentada a metodologia de interpolação <em>flat-forward</em> considerando as reuniões do COPOM, os casos particulares e as alternativas de solução. A sessão seguinte aborda o processo que minimiza do erro de apreçamento dos títulos públicos e adicionalmente submete-se a este processo os contratos futuros, com o objetivo de comparar com a metodologia anterior. No fim temos a comparação dos resultados das diferentes abordagens e a conclusão.</p>
+<p>Na próxima sessão será apresentada a metodologia de interpolação <em>flat-forward</em> e a extensão que considera as reuniões do COPOM, os casos particulares e as alternativas de solução. A sessão seguinte aborda o processo que minimiza do erro de apreçamento dos títulos públicos e adicionalmente submete-se a este processo os contratos futuros, com o objetivo de comparar com a metodologia anterior. No fim temos a comparação dos resultados das diferentes abordagens e a conclusão.</p>
 </div>
 <div class="section level2">
-<h2 id="modelo-teórico">Modelo Teórico<a class="anchor" aria-label="anchor" href="#modelo-te%C3%B3rico"></a>
+<h2 id="interpolação-flat-forward">Interpolação <em>flat-forward</em><a class="anchor" aria-label="anchor" href="#interpola%C3%A7%C3%A3o-flat-forward"></a>
 </h2>
-<p>It attachs <code>bizdays</code> and <code>fixedincome</code>.</p>
+<p>A interpolação flat-forward considera que a taxa a termo entre dois vértices é constante, por isso <em>flat-forward</em>.</p>
+<p>Sejam os vértices <span class="math inline">\(t_1\)</span> e <span class="math inline">\(t_2\)</span> (<span class="math inline">\(t_2 &gt; t_1\)</span>) com as respectivas taxas de juros a vista <span class="math inline">\(r_1\)</span> e <span class="math inline">\(r_2\)</span>. A taxa de juros a termo <span class="math inline">\(r_{12}\)</span> entre os vértices <span class="math inline">\(t_1\)</span> e <span class="math inline">\(t_2\)</span> é obtida da equação:</p>
+<p><span class="math display">\[
+(1 + r_{12})^{t_2 - t_1} = \frac{(1 + r_{2})^{t_2}}{(1 + r_{1})^{t_1}}
+\]</span></p>
+<p>De acordo com essa abordagem, para se obter uma taxa a vista <span class="math inline">\(r\)</span> em um vértice <span class="math inline">\(t\)</span>, tal que <span class="math inline">\(t_1 &lt; t &lt; t_2\)</span>, considera-se a composição da taxa a vista em <span class="math inline">\(t_1\)</span> com a taxa <span class="math inline">\(r_{12}\)</span> entre <span class="math inline">\(t_1\)</span> e <span class="math inline">\(t\)</span>.</p>
+<p><span class="math display">\[
+(1 + r)^t = (1 + r_{2})^{t_2} (1 + r_{12})^{t - t_1}
+\]</span></p>
+<p>consequentemente</p>
+<p><span class="math display">\[
+r = \left( (1 + r_{2})^{t_2} (1 + r_{12})^{t - t_1} \right)^{\frac{1}{t}} - 1
+\]</span></p>
+<p>Seguindo essa metodologia, o valor das taxas a termo de 1 dia entre os vértices <span class="math inline">\(t_1\)</span> e <span class="math inline">\(t_2\)</span> é <span class="math inline">\(r_{12}\)</span>, uma vez que:</p>
+<p><span class="math display">\[
+(1 + r_{12})^{t_2 - t_1} = \prod_{i = t_1}^{t_2} (1 + r_{12})
+\]</span></p>
+<p>O desafio aqui é construir uma interpolação <em>flat-forward</em> entre as datas do COPOM que, de preferência, mantenha as taxas a vista nos vencimentos dos futuros. De forma que o valor obtido dessa nova interpolação nos vencimentos dos futuros seja igual, ou muito próximo, às taxas a vista dos futuros. Veremos que não é possível garantir isso para todos os vértices e para lidar com estes casos particulares seram propostas diferentes abordagens cada uma com sua motivação.</p>
+<p>Para construir uma interpolação <em>flat-forward</em> entre as reuniões do COPOM será proposta uma metodologia que reconstroi a estrutura a termo a vista compondo as taxas a termo de 1 dia. Dessa maneira a estrutura a termo é construída a cada reunião considerando as taxas compostas até a última reunião. Na próxima sessão será abordada a construção dessa interpolação trecho a trecho começando pela taxa DI de 1 dia até a última reunião considerada no horizonte de análise.</p>
 </div>
 <div class="section level2">
-<h2 id="create-a-curve">Create a curve<a class="anchor" aria-label="anchor" href="#create-a-curve"></a>
+<h2 id="interpolação-flat-forward-entre-reuniões-do-copom">Interpolação <em>flat-forward</em> entre reuniões do COPOM<a class="anchor" aria-label="anchor" href="#interpola%C3%A7%C3%A3o-flat-forward-entre-reuni%C3%B5es-do-copom"></a>
 </h2>
-<p>Let’s create by hand the curve to be used in this tutorial. You must provide the curve terms and corresponding rates. The terms must be provided according to <code>daycount</code> used.</p>
-<p>Here we use the daycount <code>business/252</code>, so the terms are business days.</p>
+<div class="section level3">
+<h3 id="o-começo-até-a-primeira-reunião-do-copom">O começo até a primeira reunião do COPOM<a class="anchor" aria-label="anchor" href="#o-come%C3%A7o-at%C3%A9-a-primeira-reuni%C3%A3o-do-copom"></a>
+</h3>
+<p>Tudo começa na taxa DI de 1 dia que é divulgada diariamente pela <a href="https://b3.com.br" class="external-link">B3</a>. A Taxa DI é influenciada pela taxa SELIC e esta é definida pelo COPOM. Essa afirmação traz uma importante hipótese, a de que as mudanças de nível na Taxa DI acontecem após as datas de reunião do COPOM.</p>
+<p>Partindo de uma data referência, que tem uma taxa DI definida, consideramos que esta taxa DI se mantém constante até a primeira reunião do COPOM. Assim, um contrato futuro de DI1 com vencimento entre a data de referência e a primeira reunião já tem o seu preço de liquidação definido pela taxa DI corrente. De outra forma, um contrato futuro de DI1 com vencimento após a primeira reunião terá o seu preço de liquidação influenciado pelo resultado desta reunião. Vamos considerar <span class="math inline">\(r_t\)</span> é a taxa DI em um instante <span class="math inline">\(t\)</span>, <span class="math inline">\(t_0\)</span> o instante inicial, <span class="math inline">\(T_1\)</span> é o vencimento do primeiro futuro e <span class="math inline">\(t_1\)</span> é a primeira reunião. A taxa DI deve para o primeiro futuro de DI1 é a composição da taxa corrente até a primeira reunião com a nova taxa da reunião até o vencimento do primeiro futuro.</p>
+<p><span class="math display">\[
+(1 + r_0)^{t_1 - t_0} (1 + r_0 + m_1)^{T_1 - t_1}
+\]</span></p>
+<p>onde <span class="math inline">\(r_0\)</span> é a taxa DI corrente e a nova taxa é a soma da taxa corrente com o choque <span class="math inline">\(m_1\)</span> introduzido na primeira reunião. Essa composição de taxas deve ser igual a taxa a vista negociada no futuro de DI1 que vence em <span class="math inline">\(T_1\)</span>. Dessa maneira, é possível determinar o choque implícito <span class="math inline">\(m_1\)</span>.</p>
+<p>De acordo com o que acabamos de descrever, para a construção da estrutura a termo de juros, a constução das taxas a vista é realizada pela composição das taxas a termo de 1 dia, assim, temos que até a primeira reunião a taxa a termo de 1 dia é <span class="math inline">\(r_0\)</span> e após a primeira reunião a taxa é <span class="math inline">\(r_0 + m_1\)</span>. Esta segunda taxa permanece constante até a segunda reunião e influencia os contratos futuros com vencimento entre a primeira e segunda reuniões.</p>
 </div>
-<div class="section level2">
-<h2 id="create-the-flatforwardcopom-interpolation">Create the FlatForwardCOPOM interpolation<a class="anchor" aria-label="anchor" href="#create-the-flatforwardcopom-interpolation"></a>
-</h2>
-<p>Now we have a curve, we define the interpolation method by creating an <code>Interpolation</code> object with the function <code>interp_flatforwardcopom</code>. We pass a vector with the dates of the meetings to be used in the interpolation and set <code>conflicts = "second"</code>. There are periods between meetings that have two points and, in this cases, the second point will be used in the interpolation.</p>
-<p>Once the Interpolation object is created, it is set to the curve with the <code>interpolation&lt;-</code> method.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">copom_dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2022-03-17"</span>, <span class="st">"2022-05-05"</span>, <span class="st">"2022-06-17"</span>, <span class="st">"2022-08-04"</span><span class="op">)</span>
-<span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation.html" class="external-link">interpolation</a></span><span class="op">(</span><span class="va">curve</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interp_flatforwardcopom.html">interp_flatforwardcopom</a></span><span class="op">(</span><span class="va">copom_dates</span>, <span class="st">"second"</span><span class="op">)</span></code></pre></div>
+<div class="section level3">
+<h3 id="a-segunda-reunião">A segunda reunião<a class="anchor" aria-label="anchor" href="#a-segunda-reuni%C3%A3o"></a>
+</h3>
+<p>Como acabamos de ver, a taxa a termo de 1 dia até a segunda reunião é dada por <span class="math inline">\(r_0 + m_1\)</span>. Para determinar <span class="math inline">\(m_2\)</span>, o choque da segunda reunião, utilizamos o primeiro futuro com vencimento em <span class="math inline">\(T_2\)</span>, após a segunda reunião, em <span class="math inline">\(t_2\)</span>. Realizamos a composição das taxas a termo de 1 dia considerando as duas reuniões e o vencimento do futuro em <span class="math inline">\(T_2\)</span>.</p>
+<p><span class="math display">\[
+(1 + r_0)^{t_1 - t_0} (1 + r_0 + m_1)^{t_2 - t_1}
+(1 + r_0 + m_1 + m_2) ^ {T_2 - t_2}
+\]</span></p>
+<p>Essa composição de taxas deve ser igual a taxa a vista negociada no futuro de DI1 que vence em <span class="math inline">\(T_1\)</span> e assim obtem-se <span class="math inline">\(m_2\)</span>.</p>
 </div>
-<div class="section level2">
-<h2 id="visualize-the-interpolation">Visualize the interpolation<a class="anchor" aria-label="anchor" href="#visualize-the-interpolation"></a>
-</h2>
-<p>With everything set the curve can be easily viewed with <code>plot</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">curve</span>,
-  use_interpolation <span class="op">=</span> <span class="cn">TRUE</span>, show_forward <span class="op">=</span> <span class="cn">TRUE</span>,
-  legend_location <span class="op">=</span> <span class="st">"bottomright"</span>
-<span class="op">)</span></code></pre></div>
-<p><img src="flatforwardCOPOM-pt_files/figure-html/plot-1.png" width="700"></p>
-<p>To compare with the flat forward interpolation let’s visualize the curve with this different intepolation.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation.html" class="external-link">interpolation</a></span><span class="op">(</span><span class="va">curve</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation-constructor.html" class="external-link">interp_flatforward</a></span><span class="op">(</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">curve</span>,
-  use_interpolation <span class="op">=</span> <span class="cn">TRUE</span>, show_forward <span class="op">=</span> <span class="cn">TRUE</span>,
-  legend_location <span class="op">=</span> <span class="st">"bottomright"</span>
-<span class="op">)</span></code></pre></div>
-<p><img src="flatforwardCOPOM-pt_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
-<p>In the long term there isn’t mush difference, but in the short term the interpolated points and the forward rates are fairly different.</p>
+<div class="section level3">
+<h3 id="as-demais-reuniões">As demais reuniões<a class="anchor" aria-label="anchor" href="#as-demais-reuni%C3%B5es"></a>
+</h3>
+<p>Para as demais reuniões adota-se o mesmo procedimento. Determinar o choque <span class="math inline">\(m_i\)</span> da i-ésima reunião através da composição das taxas a termo de 1 dia até o vencimento do futuro em <span class="math inline">\(T_i\)</span>, que é o vencimento do primeiro futuro após a i-ésima reunião.</p>
+<p><span class="math display">\[
+(1 + r_0)^{t_1 - t_0}
+\prod_{i=1}^n (1 + r_0 + \sum_{j=1}^{i} m_j)^{t_{i+1} - t_i}
+(1 + r_0 + \sum_{j=1}^{n} m_j) ^ {T_n - t_n}
+\]</span></p>
+</div>
+<div class="section level3">
+<h3 id="quando-problemas-acontecem">Quando problemas acontecem<a class="anchor" aria-label="anchor" href="#quando-problemas-acontecem"></a>
+</h3>
+<p>Até aqui, consideramos o primeiro futuro após uma reunião para encontrar uma estimativa para o choque votado na reunião do COPOM. Essa abordagem funciona bem quando há apenas 1 futuro entre duas reuniões, pois dessa forma a taxa desse contrato é suficiente para definir o choque da reunião que antecede o futuro. Entretanto, é comum encontrarmos dois futuros com vencimentos entre duas reuniões e nestes casos há 4 possibilidades:</p>
+<ul>
+<li>escolher o primeiro futuro</li>
+<li>escolher o segundo futuro</li>
+<li>utilizar a taxa de juros a termo entre os futuros para definir o choque</li>
+<li>utilizar as taxas dos dois futuros em um processo de otimização para encontrar o choque</li>
+</ul>
+<p>Escolher entre o primeiro e o segundo futuros não muda a construção da composição das taxas a termo de 1 dia. Esta escolha se deve ao fato de que, quanto mais próximo de uma reunião, o primeiro futuro é menos influenciado pelo choque provocado na reunião. Esta menor influência ocorre por que o período de composição da nova taxa é de poucos dias, diferente do segundo futuro quem tem mais 1 mês de composição pela frente. Por esse motivo, quanto há 2 futuros vencendo entre duas reuniões, o segundo futuro é a escolha mais adequada.</p>
+<p>Adicionalmente, considerando a relação de não arbitragem no apreçamento dos futuros, temos que a taxa a termo entre os 2 futuros deveria ser igual a taxa a termo entre as duas reuniões. O FRA formado pelos 2 futuros, compra do curto e venda do longo, pode ser descrito como:</p>
+<p><span class="math display">\[
+\frac{N f_{cl}}{(1 + r_l)^{T_l}}
+\]</span></p>
+<p>onde $f_{cl} é a taxa a termo entre os futuros, <span class="math inline">\(r_l\)</span> é a taxa a vista do futuro longo, <span class="math inline">\(T_l\)</span> é o vencimento do futuro longo e <span class="math inline">\(N\)</span> o valor nominal. Essa fórmula mostra como o apreçamento do FRA depende da taxa a termo, que por sua vez depende do choque da reunião prévia. Todavia, o fator de desconto do FRA depende da taxa a vista do segundo vencimento, que é mais influenciado pelo choque. Esta alternativa é interessante em alguns casos, contudo, pode apresentar distorções como choques que muito fora das expectativas.</p>
+<p>A última alternativa sugere o uso de otimização para encontrar o choque</p>
+</div>
 </div>
 <div class="section level2 unnumbered">
 <h2 id="referências">Referências<a class="anchor" aria-label="anchor" href="#refer%C3%AAncias"></a>
@@ -205,7 +261,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer>
