@@ -42,7 +42,7 @@ reuniões são representadas pelas linhas tracejadas em vermelho.
 Observando o gráfico com a SELIC Meta fica evidente que a dinâmica das taxas
 de juros de curto prazo é determinada pelo COPOM.
 
-```{r seta-plot, fig.cap="Taxa de juros SELIC Meta."}
+```{r seta-plot, fig.cap="Taxa de juros SELIC Meta.", message=FALSE}
 library(flatforwardCOPOM)
 
 refdate <- as.Date("2021-02-01")
@@ -205,8 +205,121 @@ de análise.
 
 ## Interpolação *flat-forward* entre reuniões do COPOM
 
-### O começo
+### O começo até a primeira reunião do COPOM
 
-Tudo começa na taxa DI de 1 dia.
+[B3]:https://b3.com.br
+
+Tudo começa na taxa DI de 1 dia que é divulgada diariamente pela [B3][B3].
+A Taxa DI é influenciada pela taxa SELIC e esta é definida pelo COPOM.
+Essa afirmação traz uma importante hipótese, a de que as mudanças de nível
+na Taxa DI acontecem após as datas de reunião do COPOM.
+
+Partindo de uma data referência, que tem uma taxa DI definida, consideramos
+que esta taxa DI se mantém constante até a primeira reunião do COPOM.
+Assim, um contrato futuro de DI1 com vencimento entre a data de referência
+e a primeira reunião já tem o seu preço de liquidação definido pela taxa DI
+corrente.
+De outra forma, um contrato futuro de DI1 com vencimento após a primeira
+reunião terá o seu preço de liquidação influenciado pelo resultado desta
+reunião.
+Vamos considerar $r_t$ é a taxa DI em um instante $t$, $t_0$ o instante inicial,
+$T_1$ é o vencimento do primeiro futuro e $t_1$ é a primeira reunião.
+A taxa DI deve para o primeiro futuro de DI1 é a composição da taxa corrente
+até a primeira reunião com a nova taxa da reunião até o vencimento do
+primeiro futuro.
+
+$$
+(1 + r_0)^{t_1 - t_0} (1 + r_0 + m_1)^{T_1 - t_1}
+$$
+
+onde $r_0$ é a taxa DI corrente e a nova taxa é a soma da taxa corrente com o
+choque $m_1$ introduzido na primeira reunião.
+Essa composição de taxas deve ser igual a taxa a vista negociada no futuro de
+DI1 que vence em $T_1$.
+Dessa maneira, é possível determinar o choque implícito $m_1$.
+
+De acordo com o que acabamos de descrever, para a construção da estrutura
+a termo de juros, a constução das taxas a vista é realizada pela composição das
+taxas a termo de 1 dia, assim, temos que até a primeira reunião a taxa a termo
+de 1 dia é $r_0$ e após a primeira reunião a taxa é $r_0 + m_1$.
+Esta segunda taxa permanece constante até a segunda reunião e influencia os
+contratos futuros com vencimento entre a primeira e segunda reuniões.
+
+### A segunda reunião
+
+Como acabamos de ver, a taxa a termo de 1 dia até a segunda reunião é dada por
+$r_0 + m_1$.
+Para determinar $m_2$, o choque da segunda reunião, utilizamos o primeiro
+futuro com vencimento em $T_2$, após a segunda reunião, em $t_2$.
+Realizamos a composição das taxas a termo de 1 dia considerando as duas
+reuniões e o vencimento do futuro em $T_2$.
+
+$$
+(1 + r_0)^{t_1 - t_0} (1 + r_0 + m_1)^{t_2 - t_1}
+(1 + r_0 + m_1 + m_2) ^ {T_2 - t_2}
+$$
+
+Essa composição de taxas deve ser igual a taxa a vista negociada no futuro de
+DI1 que vence em $T_1$ e assim obtem-se $m_2$.
+
+### As demais reuniões
+
+Para as demais reuniões adota-se o mesmo procedimento.
+Determinar o choque $m_i$ da i-ésima reunião através da composição das taxas
+a termo de 1 dia até o vencimento do futuro em $T_i$, que é o vencimento do
+primeiro futuro após a i-ésima reunião.
+
+$$
+(1 + r_0)^{t_1 - t_0}
+\prod_{i=1}^n (1 + r_0 + \sum_{j=1}^{i} m_j)^{t_{i+1} - t_i}
+(1 + r_0 + \sum_{j=1}^{n} m_j) ^ {T_n - t_n}
+$$
+
+### Quando problemas acontecem
+
+Até aqui, consideramos o primeiro futuro após uma reunião para encontrar uma
+estimativa para o choque votado na reunião do COPOM.
+Essa abordagem funciona bem quando há apenas 1 futuro entre duas reuniões,
+pois dessa forma a taxa desse contrato é suficiente para definir o choque da 
+reunião que antecede o futuro.
+Entretanto, é comum encontrarmos dois futuros com vencimentos entre duas
+reuniões e nestes casos há 4 possibilidades:
+
+- escolher o primeiro futuro
+- escolher o segundo futuro
+- utilizar a taxa de juros a termo entre os futuros para definir o choque
+- utilizar as taxas dos dois futuros em um processo de otimização para encontrar
+  o choque
+
+Escolher entre o primeiro e o segundo futuros não muda a construção da
+composição das taxas a termo de 1 dia.
+Esta escolha se deve ao fato de que, quanto mais próximo de uma reunião, o
+primeiro futuro é menos influenciado pelo choque provocado na reunião.
+Esta menor influência ocorre por que o período de composição da nova taxa é de
+poucos dias, diferente do segundo futuro quem tem mais 1 mês de composição
+pela frente.
+Por esse motivo, quanto há 2 futuros vencendo entre duas reuniões, o segundo
+futuro é a escolha mais adequada.
+
+Adicionalmente, considerando a relação de não arbitragem no apreçamento dos 
+futuros, temos que a taxa a termo entre os 2 futuros deveria ser igual a
+taxa a termo entre as duas reuniões.
+O FRA formado pelos 2 futuros, compra do curto e venda do longo, pode ser
+descrito como:
+
+$$
+\frac{N f_{cl}}{(1 + r_l)^{T_l}}
+$$
+
+onde $f_{cl} é a taxa a termo entre os futuros, $r_l$ é a taxa a vista do
+futuro longo, $T_l$ é o vencimento do futuro longo e $N$ o valor nominal.
+Essa fórmula mostra como o apreçamento do FRA depende da taxa a termo, que
+por sua vez depende do choque da reunião prévia.
+Todavia, o fator de desconto do FRA depende da taxa a vista do segundo
+vencimento, que é mais influenciado pelo choque.
+Esta alternativa é interessante em alguns casos, contudo, pode apresentar 
+distorções como choques que muito fora das expectativas.
+
+A última alternativa sugere o uso de otimização para encontrar o choque
 
 ## Referências

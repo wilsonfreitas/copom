@@ -16,6 +16,7 @@ Description: Interpolation of term structures of interest rates that
     The reference on this method is Carreira and Brostowicz (2016 ISBN: 978-1-137-47727-9).
 Depends: bizdays, fixedincome
 Imports: methods
+Suggests: knitr, rbcb
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
