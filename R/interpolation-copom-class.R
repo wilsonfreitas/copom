@@ -174,8 +174,7 @@ get_copom_dates <- function(date = NULL, n = 8) {
     x
   } else {
     date <- as.Date(date)
-    ix <- x >= date
-    dates <- copom_dates[ix]
+    dates <- x[x >= date]
     dates[seq_len(n)]
   }
 }
