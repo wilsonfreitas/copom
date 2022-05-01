@@ -232,7 +232,9 @@ calc_zero <- function(last_result, du_copom, futs, seed_rate) {
 
 calc_moves_and_forwards <- function(results) {
   fwd <- do.call(c, lapply(results, function(x) x[["copom_forward"]]))
-  moves <- fwd - do.call(c, lapply(results, function(x) x[["zero"]]))
+  zero <- do.call(c, lapply(results, function(x) x[["zero"]]))
+  moves <- diff(fwd) |> as.numeric()
+  moves <- c((fwd[1] - zero[1]) |> as.numeric(), moves)
   dates <- do.call(c, lapply(results, function(x) x[["copom_date"]]))
   data.frame(
     dates,
