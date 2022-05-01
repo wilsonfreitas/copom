@@ -253,7 +253,7 @@ copom_calc <- function(parts, x = 1, results = NULL,
 
   conflicts <- match.arg(conflicts)
   futs <- parts[[x]]$futures
-  result <- if (length(futs) == 2) {
+  result <- if (length(futs) >= 2) {
     if (conflicts == "forward") {
       calc_with(parts, x, results, forward_calc_use_forward)
     } else if (conflicts == "first") {
