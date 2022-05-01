@@ -17,7 +17,8 @@ setClass(
   "FlatForwardCOPOM",
   slots = c(
     copom_dates = "ANY",
-    conflicts = "character"
+    conflicts = "character",
+    moves = "ANY"
   ),
   contains = "Interpolation"
 )
@@ -115,8 +116,11 @@ setMethod(
     x@interpolation <- NULL
 
     parts <- split_curve_into_copom_dates(x, object@copom_dates)
-    zero_curve <- copom_calc(parts, 1, conflicts = object@conflicts)
+    results <- copom_calc(parts, 1, conflicts = object@conflicts)
+    zero_curve <- do.call(c, lapply(results, function(x) x$zero))
     zero_curve <- c(x[1], zero_curve, x[x@terms > max(zero_curve@terms)])
+
+    object@moves <- calc_moves_and_forwards(results)
 
     terms <- as.numeric(zero_curve@terms)
     prices <- compound(zero_curve)
@@ -226,13 +230,23 @@ calc_zero <- function(last_result, du_copom, futs, seed_rate) {
   }
 }
 
+calc_moves_and_forwards <- function(results) {
+  fwd <- do.call(c, lapply(results, function(x) x[["copom_forward"]]))
+  moves <- fwd - do.call(c, lapply(results, function(x) x[["zero"]]))
+  dates <- do.call(c, lapply(results, function(x) x[["copom_date"]]))
+  data.frame(
+    dates,
+    forward_rates = fwd,
+    moves = as.numeric(moves)
+  )
+}
+
 copom_calc <- function(parts, x = 1, results = NULL,
                        conflicts = c(
                          "forward", "second", "first", "optimize"
                        )) {
   if (x > length(parts)) {
-    zero_curve <- do.call(c, lapply(results, function(x) x$zero))
-    return(zero_curve)
+    return(results)
   }
 
   conflicts <- match.arg(conflicts)

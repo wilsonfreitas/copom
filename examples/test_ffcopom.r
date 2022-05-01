@@ -13,5 +13,6 @@ if (require(fixedincome) && require(bizdays)) {
   )
   interpolation(curve) <- interp_flatforwardcopom(copom_dates, "second")
 
+  interpolation(curve)@moves
   plot(curve, use_interpolation = TRUE, show_forward = TRUE)
 }
