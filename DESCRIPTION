@@ -19,7 +19,8 @@ Imports: methods
 Suggests: 
     knitr,
     rbcb,
-    rmarkdown
+    rmarkdown,
+    tidyverse
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
