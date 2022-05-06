@@ -1,17 +1,17 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# flatforwardCOPOM
+# copom
 
 <!-- badges: start -->
 
 [![CRAN
-status](https://www.r-pkg.org/badges/version/flatforwardCOPOM)](https://CRAN.R-project.org/package=flatforwardCOPOM)
+status](https://www.r-pkg.org/badges/version/copom)](https://CRAN.R-project.org/package=copom)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of flatforwardCOPOM is to interpolate term structures of
+The goal of copom is to interpolate term structures of
 interest rates taking into account the meetings where the regulators
 discuss the changes on interest rates.
 
@@ -25,12 +25,12 @@ derivatives.
 
 ## Installation
 
-You can install the development version of flatforwardCOPOM from
+You can install the development version of copom from
 [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("wilsonfreitas/flatforwardCOPOM")
+devtools::install_github("wilsonfreitas/copom")
 ```
 
 ## Example
@@ -38,7 +38,7 @@ devtools::install_github("wilsonfreitas/flatforwardCOPOM")
 ``` r
 library(bizdays)
 library(fixedincome)
-library(flatforwardCOPOM)
+library(copom)
 
 copom_dates <- as.Date(
   c("2022-03-17", "2022-05-05", "2022-06-17", "2022-08-04")

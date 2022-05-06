@@ -43,7 +43,7 @@ Observando o gráfico com a SELIC Meta fica evidente que a dinâmica das taxas
 de juros de curto prazo é determinada pelo COPOM.
 
 ```{r seta-plot, fig.cap="Taxa de juros SELIC Meta.", message=FALSE}
-library(flatforwardCOPOM)
+library(copom)
 
 refdate <- as.Date("2021-02-01")
 seta <- rbcb::get_series(c(SELIC = 432),

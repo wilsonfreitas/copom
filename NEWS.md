@@ -1,3 +1,3 @@
-# flatforwardCOPOM 0.0.1
+# copom 0.0.1
 
 * First release

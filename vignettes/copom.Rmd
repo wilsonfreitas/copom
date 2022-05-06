@@ -1,5 +1,5 @@
 ---
-title: "Introduction to flatforwardCOPOM"
+title: "Introduction to copom package"
 output: html_document
 ---
 
@@ -7,12 +7,12 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## flatforwardCOPOM
+## copom
 
-Start attaching `flatforwardCOPOM`.
+Start attaching `copom`.
 
 ```{r message=FALSE, warning=FALSE}
-library(flatforwardCOPOM)
+library(copom)
 ```
 
 It attachs `bizdays` and `fixedincome`.
@@ -37,7 +37,7 @@ curve <- spotratecurve(
 
 Here we use the daycount `business/252`, so the terms are business days.
 
-## Create the FlatForwardCOPOM interpolation
+## Create the copom interpolation
 
 Now we have a curve, we define the interpolation method by creating an
 `Interpolation` object with the function `interp_flatforwardcopom`.
@@ -61,8 +61,10 @@ interpolation(curve) <- interp_flatforwardcopom(copom_dates, "second")
 With everything set the curve can be easily viewed with `plot`.
 
 ```{r plot}
-plot(curve, use_interpolation = TRUE, show_forward = TRUE,
-     legend_location = "bottomright")
+plot(curve,
+  use_interpolation = TRUE, show_forward = TRUE,
+  legend_location = "bottomright"
+)
 ```
 
 To compare with the flat forward interpolation let's visualize the curve with 
@@ -70,8 +72,10 @@ this different intepolation.
 
 ```{r}
 interpolation(curve) <- interp_flatforward()
-plot(curve, use_interpolation = TRUE, show_forward = TRUE,
-     legend_location = "bottomright")
+plot(curve,
+  use_interpolation = TRUE, show_forward = TRUE,
+  legend_location = "bottomright"
+)
 ```
 
 In the long term there isn't mush difference, but in the short term the
