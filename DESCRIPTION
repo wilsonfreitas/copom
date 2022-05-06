@@ -27,3 +27,9 @@ RoxygenNote: 7.1.2
 Remotes: wilsonfreitas/R-fixedincome
 URL: https://wilsonfreitas.github.io/copom/
 VignetteBuilder: knitr
+Collate: 
+    'copom-dates.R'
+    'copom-package.R'
+    'flatforwardcopom-functions.R'
+    'copomscenarios-class.R'
+    'flatforwardcopom-class.R'

@@ -1,3 +1,6 @@
+#' @include flatforwardcopom-functions.R copom-dates.R
+NULL
+
 #' COPOMScenarios class
 #'
 #' COPOMScenarios class is an interpolation that uses scenarios for spot rates
