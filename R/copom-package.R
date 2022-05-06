@@ -19,7 +19,9 @@
 #'             "Brazilian Derivatives and Securities", Palgrave Macmillan, 2016
 #' @importFrom fixedincome forwardrate maturities as.spotratecurve term
 #' @importFrom fixedincome compound prepare_interpolation toyears spotratecurve
-#' @importFrom fixedincome spotratecurve rates
+#' @importFrom fixedincome spotratecurve rates interpolation<-
+#' @importFrom fixedincome interpolation_error shift as.spotrate
+#' @importFrom fixedincome fit_interpolation
 #' @importFrom bizdays bizdays
 #' @importFrom grDevices xy.coords
 #' @importFrom stats optim approxfun

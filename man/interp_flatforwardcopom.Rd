@@ -2,7 +2,7 @@
 % Please edit documentation in R/interpolation-copom-class.R
 \name{interp_flatforwardcopom}
 \alias{interp_flatforwardcopom}
-\title{Interpolation constructor}
+\title{FlatForwardCOPOM constructor}
 \usage{
 interp_flatforwardcopom(copom_dates, conflicts)
 }
