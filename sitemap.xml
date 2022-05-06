@@ -13,6 +13,9 @@
     <loc>https://wilsonfreitas.github.io/copom/articles/copom-pt.html</loc>
   </url>
   <url>
+    <loc>https://wilsonfreitas.github.io/copom/articles/copom-scenarios.html</loc>
+  </url>
+  <url>
     <loc>https://wilsonfreitas.github.io/copom/articles/copom.html</loc>
   </url>
   <url>
@@ -28,16 +31,25 @@
     <loc>https://wilsonfreitas.github.io/copom/news/index.html</loc>
   </url>
   <url>
+    <loc>https://wilsonfreitas.github.io/copom/reference/COPOMScenarios-class.html</loc>
+  </url>
+  <url>
     <loc>https://wilsonfreitas.github.io/copom/reference/FlatForwardCOPOM-class.html</loc>
   </url>
   <url>
     <loc>https://wilsonfreitas.github.io/copom/reference/copom-package.html</loc>
   </url>
   <url>
+    <loc>https://wilsonfreitas.github.io/copom/reference/fit_interpolation-COPOMScenarios-SpotRateCurve-method.html</loc>
+  </url>
+  <url>
     <loc>https://wilsonfreitas.github.io/copom/reference/get_copom_dates.html</loc>
   </url>
   <url>
     <loc>https://wilsonfreitas.github.io/copom/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://wilsonfreitas.github.io/copom/reference/interp_copomscenarios.html</loc>
   </url>
   <url>
     <loc>https://wilsonfreitas.github.io/copom/reference/interp_flatforwardcopom.html</loc>
