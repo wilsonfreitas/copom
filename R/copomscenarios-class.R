@@ -35,11 +35,13 @@ setMethod(
 
     if (length(object@copom_moves)) {
       acc_moves <- c(0, cumsum(object@copom_moves))
-      comp <- cumprod(compound(as.spotrate(x[1]) + acc_moves, t))
-    } else {
-      fwd <- spotrate(object@forward_rates, .copyfrom = x)
-      comp <- cumprod(compound(fwd, t))
+      object@forward_rates <- as.numeric(as.spotrate(x[1]) + acc_moves)[-1]
     }
+    fwd <- c(as.spotrate(x[1]), object@forward_rates)
+    if (!length(object@copom_moves)) {
+      object@copom_moves <- as.numeric(diff(fwd))
+    }
+    comp <- cumprod(compound(fwd, t))
 
     ix <- x@terms > max(t1)
     terms <- c(term(1, "days"), t1, x@terms[ix])
@@ -48,7 +50,6 @@ setMethod(
     } else {
       prices <- c(compound(x[1]), comp)
     }
-
     interp_coords <- xy.coords(terms, log(prices))
     interp_fun <- approxfun(interp_coords, method = "linear")
     dc <- x@daycount

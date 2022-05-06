@@ -1,12 +1,32 @@
-
+library(dplyr)
+library(stringr)
 source("examples/utils-functions.R")
-source("examples/copomscenarios.R")
+devtools::load_all()
 
 di1 <- get_curve_from_web()
-cd <- get_copom_dates(di1@refdate, 8)
-cm <- c(100, 50, 0, 0, 0, 0, 0, 0) / 1e4
+cd <- get_copom_dates(di1@refdate, 7)
+cm <- c(50, 25, 0, 0, 0, 0, 0) / 1e4
 interpolation(di1) <- interp_copomscenarios(cd, cm)
-plot(di1, use_interpolation = TRUE)
+plot(di1 |> fixedincome::first("1 years"), use_interpolation = TRUE)
+
+# FOCUS scenarios
+
+df <- rbcb::get_market_expectations("top5s-selic", start_date = "2022-04-29")
+
+df <- df |>
+  mutate(
+    Reuniao_ano = str_split(reuniao, "/", simplify = TRUE)[, 2],
+    Reuniao_cod = str_split(reuniao, "/", simplify = TRUE)[, 1],
+    reuniao = str_c(Reuniao_ano, Reuniao_cod)
+  ) |>
+  arrange(reuniao) |>
+  filter(tipoCalculo == "C")
+
+fwd <- (df[["mediana"]][2:8] - 0.1) / 100
+interpolation(di1) <- interp_copomscenarios(cd, forward_rates = fwd)
+plot(di1 |> fixedincome::first("1 years"), use_interpolation = TRUE)
+
+# ----
 
 # optimize COPOM moves against a given curve
 interp <- fit_interpolation(interp_copomscenarios(cd, cm), di1)
@@ -23,9 +43,6 @@ fit_interpolation_with_bonds <- function(object, x, bonds) {
   }, method = "BFGS", x = x, .dates = object@copom_dates)
   interp_copomscenarios(object@copom_dates, res$par)
 }
-
-library(dplyr)
-library(stringr)
 
 df <- rbcb::get_market_expectations("top5s-selic", start_date = "2022-04-29")
 
