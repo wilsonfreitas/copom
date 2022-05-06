@@ -259,7 +259,7 @@ contract_to_maturity <- function(x) {
 
 get_curve_from_web <- function(refdate = NULL) {
   contracts <- get_contracts(refdate)
-  refdate <- contracts$DataRef[1] |> as.Date()
+  refdate_ <- contracts$DataRef[1] |> as.Date()
   di1 <- contracts |>
     filter(Mercadoria == "DI1") |>
     mutate(
@@ -280,11 +280,18 @@ get_curve_from_web <- function(refdate = NULL) {
     "discrete",
     "business/252",
     "Brazil/ANBIMA",
-    refdate = refdate
+    refdate = refdate_
   )
 
   rates <- cdi_rate_from_web(refdate)
-  di1_curve[[1]] <- rates$CDI
+  if (rates$refdate != refdate_) {
+    rates <- cdi_rate_from_web(refdate_)
+  }
+  if (rates$refdate != refdate_) {
+    warning("Can't fetch CDI - returned curve does not have 1 day term")
+  } else {
+    di1_curve[[1]] <- rates$CDI
+  }
 
   di1_curve
 }
