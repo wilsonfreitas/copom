@@ -1,28 +1,88 @@
+#' @include flatforwardcopom-functions.R copom-dates.R
+NULL
 
+#' COPOMScenarios class
+#'
+#' COPOMScenarios class is an interpolation that uses scenarios for spot rates
+#' after COPOM meetings together with flat forward COPOM interpolation.
+#'
+#' The scenarios can be defined in two ways:
+#'
+#' - future values for SELIC rates
+#' - future values for changes in SELIC rates
+#'
+#' both associated to each meeting.
+#'
+#' @seealso FlatForwardCOPOM
+#' @seealso interp_flatforwardcopom
+#'
+#' @export
 setClass(
   "COPOMScenarios",
   slots = c(
     copom_dates = "ANY",
-    forward_rates = "numeric",
+    future_rates = "numeric",
     copom_moves = "numeric"
   ),
   contains = "Interpolation"
 )
 
+#' COPOMScenarios constructor
+#'
+#' `interp_copomscenarios` creates the Interpolation object.
+#'
+#' @param copom_dates a vector of `Date` objects.
+#' @param copom_moves a numeric vector with scenarios for changes in short term
+#'        rates.
+#' @param future_rates a numeric vector with scenarios for short term rates.
+#'
+#' `copom_dates` is a vector with de dates of the meetings that must be
+#' considered in the interpolation.
+#'
+#' `copom_moves` is a vector with the scenarios for changes in short term rates,
+#' in this case, SELIC rates.
+#' The scenarios are decimal (not basis points or percentual), so a scenario of
+#' 100 bps must be declared as 0.01, for example.
+#' `future_rates` is a numeric vector with scenarios for future values of the
+#' short term rate.
+#' `copom_moves` and `future_rates` arguments are complementary,
+#' if one is set, the other must be `NULL`.
+#'
+#' @return A `COPOMScenarios` object.
+#' @examples
+#' if (require(fixedincome) && require(bizdays)) {
+#'   copom_dates <- as.Date(
+#'     c("2022-03-17", "2022-05-05", "2022-06-17", "2022-08-04")
+#'   )
+#'   terms <- c(1, 3, 25, 44, 66, 87, 108, 131, 152, 172, 192, 214, 236, 277)
+#'   rates <- c(
+#'     0.1065, 0.1064, 0.111, 0.1138, 0.1168, 0.1189, 0.1207, 0.1219,
+#'     0.1227, 0.1235, 0.1234, 0.1236, 0.1235, 0.1235
+#'   )
+#'   curve <- spotratecurve(
+#'     rates, terms, "discrete", "business/252", "Brazil/ANBIMA",
+#'     refdate = as.Date("2022-02-23")
+#'   )
+#'   moves <- c(50, 0, 0, 0) / 1e4
+#'   interpolation(curve) <- interp_copomscenarios(copom_dates, moves)
+#' }
+#' @export
 interp_copomscenarios <- function(copom_dates, copom_moves = numeric(0),
-                                  forward_rates = numeric(0)) {
-  if (length(copom_moves) && length(forward_rates)) {
-    stop("Provide copom_moves or forward_rates, not both")
+                                  future_rates = numeric(0)) {
+  if (length(copom_moves) && length(future_rates)) {
+    stop("Provide copom_moves or future_rates, not both")
   }
   obj <- new("COPOMScenarios", "copomscenarios",
     copom_dates = copom_dates,
     copom_moves = copom_moves,
-    forward_rates = forward_rates
+    future_rates = future_rates
   )
   obj@propagate <- FALSE
   obj
 }
 
+
+#' @export
 setMethod(
   "prepare_interpolation",
   signature(object = "COPOMScenarios", x = "SpotRateCurve"),
@@ -35,9 +95,9 @@ setMethod(
 
     if (length(object@copom_moves)) {
       acc_moves <- c(0, cumsum(object@copom_moves))
-      object@forward_rates <- as.numeric(as.spotrate(x[1]) + acc_moves)[-1]
+      object@future_rates <- as.numeric(as.spotrate(x[1]) + acc_moves)[-1]
     }
-    fwd <- c(as.spotrate(x[1]), object@forward_rates)
+    fwd <- c(as.spotrate(x[1]), object@future_rates)
     if (!length(object@copom_moves)) {
       object@copom_moves <- as.numeric(diff(fwd))
     }
@@ -63,6 +123,40 @@ setMethod(
   }
 )
 
+#' Fit COPOM moves according to a SpotRateCurve
+#'
+#' Finds the COPOM moves (or future rates) that yields the least interpolation
+#' error.
+#'
+#' @param object a COPOMScenarios object with initial parameters set.
+#' @param x a SpotRateCurve object.
+#' @param ... additional arguments. Currently unused.
+#'
+#' @return A `Interpolation` object.
+#' @examples
+#' \dontrun{
+#' library(fixedincome)
+#' library(bizdays)
+#' copom_dates <- as.Date(
+#'   c("2022-03-17", "2022-05-05", "2022-06-17", "2022-08-04")
+#' )
+#' terms <- c(1, 3, 25, 44, 66, 87, 108, 131, 152, 172, 192, 214, 236, 277)
+#' rates <- c(
+#'   0.1065, 0.1064, 0.111, 0.1138, 0.1168, 0.1189, 0.1207, 0.1219,
+#'   0.1227, 0.1235, 0.1234, 0.1236, 0.1235, 0.1235
+#' )
+#' curve <- spotratecurve(
+#'   rates, terms, "discrete", "business/252", "Brazil/ANBIMA",
+#'   refdate = as.Date("2022-02-23")
+#' )
+#' cd <- get_copom_dates(curve@refdate, 4)
+#' cm <- c(50, 25, 0, 0) / 1e4
+#' interpolation(curve) <- fit_interpolation(
+#'   interp_copomscenarios(cd, cm),
+#'   curve
+#' )
+#' }
+#' @export
 setMethod(
   "fit_interpolation",
   signature(object = "COPOMScenarios", x = "SpotRateCurve"),

@@ -1,7 +1,11 @@
 ---
 title: Interpolação flat-forward nas reuniões do COPOM
 bibliography: references.bib
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{copom-article}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}

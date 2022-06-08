@@ -1,0 +1,58 @@
+---
+title: "Using Prospective Scenarios with Flat-Forward COPOM Interpolation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{copom-prospective-scenarios}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+```{r}
+library(tidyverse)
+library(fixedincome)
+library(copom)
+
+refdate <- as.Date("2022-04-29")
+```
+
+```{r curve}
+terms <- c(1, 23, 44, 65, 88, 109, 129, 149, 171, 193, 211, 234, 252)
+rates <- c(
+  0.1165, 0.1247, 0.1265, 0.1281, 0.1294, 0.1298, 0.1301, 0.1304,
+  0.1303, 0.1305, 0.1306, 0.1302, 0.1300
+)
+curve <- spotratecurve(
+  rates, terms, "discrete", "business/252", "Brazil/ANBIMA",
+  refdate = refdate
+)
+```
+
+```{r}
+copom_dates <- get_copom_dates(refdate, 4)
+```
+
+```{r}
+moves <- c(100, 0, 0, 0) / 1e4
+interpolation(curve) <- interp_copomscenarios(copom_dates, copom_moves = moves)
+plot(curve, use_interpolation = TRUE)
+```
+
+```{r}
+moves <- c(100, 25, 0, 0) / 1e4
+interpolation(curve) <- interp_copomscenarios(copom_dates, copom_moves = moves)
+plot(curve, use_interpolation = TRUE)
+```
+
+```{r}
+moves <- c(100, 50, 0, 0) / 1e4
+interpolation(curve) <- interp_copomscenarios(copom_dates, copom_moves = moves)
+plot(curve, use_interpolation = TRUE)
+```

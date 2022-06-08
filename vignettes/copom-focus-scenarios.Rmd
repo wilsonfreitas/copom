@@ -1,0 +1,87 @@
+---
+title: "Using FOCUS Expectations with Flat-Forward COPOM Interpolation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{copom-focus-scenarios}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The FOCUS report delivers weekly a number of expectations of market variables
+(indexes and rates).
+One of these is the SELIC rate, it is informed future values for each one of
+the future COPOM meetings.
+These data can be obtained with the `rbcb` package.
+
+```{r}
+library(tidyverse)
+library(fixedincome)
+
+refdate <- as.Date("2022-04-29")
+
+df <- rbcb::get_market_expectations("top5s-selic",
+  start_date = refdate,
+  end_date = refdate
+)
+df <- df |>
+  mutate(
+    Reuniao_ano = str_split(reuniao, "/", simplify = TRUE)[, 2],
+    Reuniao_cod = str_split(reuniao, "/", simplify = TRUE)[, 1],
+    reuniao = str_c(Reuniao_ano, Reuniao_cod)
+  ) |>
+  arrange(reuniao) |>
+  filter(tipoCalculo == "C") |>
+  select(reuniao, mediana)
+df
+```
+
+```{r}
+df |>
+  ggplot(aes(x = reuniao, y = mediana)) +
+  geom_point() +
+  geom_text(aes(label = mediana, hjust = 0.5, vjust = -1.0)) +
+  labs(
+    x = "Meeting",
+    y = "SELIC Rate",
+    title = "SELIC Rates Expectations",
+    caption = "Source: FOCUS Report"
+  )
+```
+
+```{r curve}
+terms <- c(1, 23, 44, 65, 88, 109, 129, 149, 171, 193, 211, 234, 252)
+rates <- c(
+  0.1165, 0.1247, 0.1265, 0.1281, 0.1294, 0.1298, 0.1301, 0.1304,
+  0.1303, 0.1305, 0.1306, 0.1302, 0.1300
+)
+curve <- spotratecurve(
+  rates, terms, "discrete", "business/252", "Brazil/ANBIMA",
+  refdate = refdate
+)
+```
+
+```{r}
+library(copom)
+copom_dates <- get_copom_dates(refdate, 8)
+fwd <- (df[["mediana"]][1:8] - 0.1) / 100
+interpolation(curve) <- interp_copomscenarios(copom_dates, future_rates = fwd)
+plot(curve |> fixedincome::first("1 years"), use_interpolation = TRUE)
+```
+
+```{r}
+interp <- interpolation(curve)
+interp@copom_moves * 1e4
+```
+
+```{r}
+moves <- c(100, 25, 25, 0, 0, 0, 0, 0) / 1e4
+interpolation(curve) <- interp_copomscenarios(copom_dates, copom_moves = moves)
+plot(curve |> fixedincome::first("1 years"), use_interpolation = TRUE)
+```
