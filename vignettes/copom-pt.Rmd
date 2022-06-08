@@ -12,9 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 O objetivo deste artigo é apresentar uma metodologia para a interpolação de uma
 curva de juros considerando as datas de reuniões do Comitê de Política
-Monetária (COPOM) como vértices e consequentemente o seu efeito nas taxas
-de juros de 1 dia a termo.
-
+Monetária (COPOM) como vértices e consequentemente o seu efeito nas 
+expectativas das taxas de juros a termo de 1 dia.
 
 ## Introdução
 
@@ -30,9 +29,10 @@ futuros.
 
 O método de interpolação flat-forward [@hagan2006interpolation] é comumente
 utilizado para interpolar a curva de juros prefixados, e a interpolação é
-realizada a partir dos vencimentos dos futuros.
+realizada a partir dos vértices da curva, ou seja, os vencimentos dos futuros.
 Entretanto, na parte curta da curva, tipicamente dentro do primeiro ano,
 a dinâmica dos juros é determinada pelo COPOM.
+
 No gráfico abaixo temos um histórico da taxa de juros SELIC Meta
 definida pelo COPOM.
 O histórico vai de fevereiro de 2021 a fevereiro de 2022 e compreende 8 reuniões
@@ -62,7 +62,8 @@ abline(v = copom_du, lty = "dashed", col = "red")
 ```
 
 O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua
-vez influencia a taxa DI, utilizada no mercado interbancário.
+vez influencia a taxa DI, utilizada no mercado interbancário e ativo
+objeto dos contratos futuros de DI1.
 Dessa maneira, é esperado que esta taxa DI mude de nível após as reuniões do
 Comitê.
 Contudo, aplicando a interpolação flat-forward a curva de juros com vencimentos
