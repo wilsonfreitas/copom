@@ -6,6 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Interpolação flat-forward nas reuniões do COPOM • copom</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/yeti/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -13,6 +19,7 @@
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Interpolação flat-forward nas reuniões do COPOM">
 <meta property="og:description" content="copom">
+<meta property="og:image" content="https://wilsonfreitas.github.io/copom/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -53,10 +60,13 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/copom-pt.html">Interpolação flat-forward nas reuniões do COPOM</a>
+      <a href="../articles/copom-focus-scenarios.html">Using FOCUS Expectations with Flat-Forward COPOM Interpolation</a>
     </li>
     <li>
-      <a href="../articles/copom-scenarios.html">copom-scenarios</a>
+      <a href="../articles/copom-prospective-scenarios.html">Using Prospective Scenarios with Flat-Forward COPOM Interpolation</a>
+    </li>
+    <li>
+      <a href="../articles/copom-pt.html">Interpolação flat-forward nas reuniões do COPOM</a>
     </li>
   </ul>
 </li>
@@ -90,62 +100,63 @@
 <div class="section level2">
 <h2 id="resumo">Resumo<a class="anchor" aria-label="anchor" href="#resumo"></a>
 </h2>
-<p>O objetivo deste artigo é apresentar uma metodologia para a interpolação de uma curva de juros considerando as datas de reuniões do Comitê de Política Monetária (COPOM) como vértices e consequentemente o seu efeito nas taxas de juros de 1 dia a termo.</p>
+<p>O objetivo deste artigo é apresentar uma metodologia para a interpolação de uma curva de juros considerando as datas de reuniões do Comitê de Política Monetária (COPOM) como vértices e consequentemente o seu efeito nas expectativas das taxas de juros a termo de 1 dia.</p>
 </div>
 <div class="section level2">
 <h2 id="introdução">Introdução<a class="anchor" aria-label="anchor" href="#introdu%C3%A7%C3%A3o"></a>
 </h2>
 <p>A estrutura a termo de juros prefixados utilizada no Brasil se apresenta de duas formas, sem caixa e com caixa, a primeira é formada com base nos contratos futuros de Taxa DI (DI1) negociados na B3. A segunda versão pode ser extraída dos títulos públicos prefixados, negociados no Tesouro Direto e que têm preços de referência divulgados na ANBIMA. A versão mais utilizada é a sem caixa, formada a partir dos contratos futuros de DI1. Dessa maneira, os vértices da curva correspondem aos vencimentos dos contratos futuros.</p>
-<p>O método de interpolação flat-forward <span class="citation">(Hagan and West 2006)</span> é comumente utilizado para interpolar a curva de juros prefixados, e a interpolação é realizada a partir dos vencimentos dos futuros. Entretanto, na parte curta da curva, tipicamente dentro do primeiro ano, a dinâmica dos juros é determinada pelo COPOM. No gráfico abaixo temos um histórico da taxa de juros SELIC Meta definida pelo COPOM. O histórico vai de fevereiro de 2021 a fevereiro de 2022 e compreende 8 reuniões do comitê. No gráfico a taxa de juros SELIC Meta definida está em azul e as datas das reuniões são representadas pelas linhas tracejadas em vermelho. Observando o gráfico com a SELIC Meta fica evidente que a dinâmica das taxas de juros de curto prazo é determinada pelo COPOM.</p>
+<p>O método de interpolação flat-forward <span class="citation">(Hagan and West 2006)</span> é comumente utilizado para interpolar a curva de juros prefixados, e a interpolação é realizada a partir dos vértices da curva, ou seja, os vencimentos dos futuros. Entretanto, na parte curta da curva, tipicamente dentro do primeiro ano, a dinâmica dos juros é determinada pelo COPOM.</p>
+<p>No gráfico abaixo temos um histórico da taxa de juros SELIC Meta definida pelo COPOM. O histórico vai de fevereiro de 2021 a fevereiro de 2022 e compreende 8 reuniões do comitê. No gráfico a taxa de juros SELIC Meta definida está em azul e as datas das reuniões são representadas pelas linhas tracejadas em vermelho. Observando o gráfico com a SELIC Meta fica evidente que a dinâmica das taxas de juros de curto prazo é determinada pelo COPOM.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilsonfreitas.github.io/copom/">copom</a></span><span class="op">)</span>
-
-<span class="va">refdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2021-02-01"</span><span class="op">)</span>
-<span class="va">seta</span> <span class="op">&lt;-</span> <span class="fu">rbcb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rbcb/man/get_series.html" class="external-link">get_series</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>SELIC <span class="op">=</span> <span class="fl">432</span><span class="op">)</span>,
-  start_date <span class="op">=</span> <span class="va">refdate</span>,
-  end_date <span class="op">=</span> <span class="st">"2022-02-23"</span>
-<span class="op">)</span>
-<span class="va">du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">seta</span><span class="op">$</span><span class="va">date</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">du</span>, <span class="va">seta</span><span class="op">$</span><span class="va">SELIC</span>,
-  type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"blue"</span>,
-  xlab <span class="op">=</span> <span class="st">"Dias úteis"</span>, ylab <span class="op">=</span> <span class="st">"Taxa de Juros (%)"</span>,
-  main <span class="op">=</span> <span class="st">"Taxa de juros - Meta Selic definida pelo Copom"</span>
-<span class="op">)</span>
-<span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_copom_dates.html">get_copom_dates</a></span><span class="op">(</span><span class="st">"2021-02-01"</span>, <span class="fl">8</span><span class="op">)</span>
-<span class="va">copom_du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">dates</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="va">copom_du</span>, lty <span class="op">=</span> <span class="st">"dashed"</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilsonfreitas.github.io/copom/">copom</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">refdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2021-02-01"</span><span class="op">)</span></span>
+<span><span class="va">seta</span> <span class="op">&lt;-</span> <span class="fu">rbcb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rbcb/man/get_series.html" class="external-link">get_series</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>SELIC <span class="op">=</span> <span class="fl">432</span><span class="op">)</span>,</span>
+<span>  start_date <span class="op">=</span> <span class="va">refdate</span>,</span>
+<span>  end_date <span class="op">=</span> <span class="st">"2022-02-23"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">seta</span><span class="op">$</span><span class="va">date</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">du</span>, <span class="va">seta</span><span class="op">$</span><span class="va">SELIC</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"blue"</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Dias úteis"</span>, ylab <span class="op">=</span> <span class="st">"Taxa de Juros (%)"</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Taxa de juros - Meta Selic definida pelo Copom"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_copom_dates.html">get_copom_dates</a></span><span class="op">(</span><span class="st">"2021-02-01"</span>, <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="va">copom_du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">dates</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="va">copom_du</span>, lty <span class="op">=</span> <span class="st">"dashed"</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="copom-pt_files/figure-html/seta-plot-1.png" alt="Taxa de juros SELIC Meta." width="700"><p class="caption">
 Taxa de juros SELIC Meta.
 </p>
 </div>
-<p>O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua vez influencia a taxa DI, utilizada no mercado interbancário. Dessa maneira, é esperado que esta taxa DI mude de nível após as reuniões do Comitê. Contudo, aplicando a interpolação flat-forward a curva de juros com vencimentos dos futuros e calculando as taxas a termo de 1 dia, observa-se que as mudanças de nível nas taxas de juros, geradas pela interpolação, ocorrem após cada vértice de vencimento de futuros. Portanto, temos que, para o curto prazo, a interpolação cria um comportamento diferente do que é observado. Assim, é necessário realizar uma interpolação flat-forward, para a parte curta da curva, considerando as reuniões do COPOM <span class="citation">(Carreira and Brostowicz Jr 2016)</span>, fazendo com que as taxas de juros a termo fiquem constante entre as reuniões.</p>
+<p>O COPOM reune-se periodicamente para definir o nível da taxa SELIC que por sua vez influencia a taxa DI, utilizada no mercado interbancário e ativo objeto dos contratos futuros de DI1. Dessa maneira, é esperado que esta taxa DI mude de nível após as reuniões do Comitê. Contudo, aplicando a interpolação flat-forward a curva de juros com vencimentos dos futuros e calculando as taxas a termo de 1 dia, observa-se que as mudanças de nível nas taxas de juros, geradas pela interpolação, ocorrem após cada vértice de vencimento de futuros. Portanto, temos que, para o curto prazo, a interpolação cria um comportamento diferente do que é observado. Assim, é necessário realizar uma interpolação flat-forward, para a parte curta da curva, considerando as reuniões do COPOM <span class="citation">(Carreira and Brostowicz Jr 2016)</span>, fazendo com que as taxas de juros a termo fiquem constante entre as reuniões.</p>
 <p>Vamos construir um exemplo com a curva de juros prefixados para a data de referência 23/02/2022. Neste exemplo vamos construir uma estrutura a termo de juros a vista (classe <code>spotratecurve</code>) e definir a interpolação <em>flat-forward</em> para essa curva. Em seguida vamos calcular as taxas de juros a termo de 1 dia e visualizar em um gráfico as mudanças de nível nas taxas a termo junto com as datas de reuniões do COPOM.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/wilsonfreitas/R-fixedincome" class="external-link">fixedincome</a></span><span class="op">)</span>
-
-<span class="va">refdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2022-02-23"</span><span class="op">)</span>
-<span class="va">terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">25</span>, <span class="fl">44</span>, <span class="fl">66</span>, <span class="fl">87</span>, <span class="fl">108</span>, <span class="fl">131</span>, <span class="fl">152</span>, <span class="fl">172</span>, <span class="fl">192</span>, <span class="fl">214</span>, <span class="fl">236</span>, <span class="fl">277</span><span class="op">)</span>
-<span class="va">rates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>
-  <span class="fl">0.1065</span>, <span class="fl">0.1064</span>, <span class="fl">0.111</span>, <span class="fl">0.1138</span>, <span class="fl">0.1168</span>, <span class="fl">0.1189</span>, <span class="fl">0.1207</span>, <span class="fl">0.1219</span>,
-  <span class="fl">0.1227</span>, <span class="fl">0.1235</span>, <span class="fl">0.1234</span>, <span class="fl">0.1236</span>, <span class="fl">0.1235</span>, <span class="fl">0.1235</span>
-<span class="op">)</span>
-<span class="va">curve</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/spotratecurve.html" class="external-link">spotratecurve</a></span><span class="op">(</span>
-  <span class="va">rates</span>, <span class="va">terms</span>, <span class="st">"discrete"</span>, <span class="st">"business/252"</span>, <span class="st">"Brazil/ANBIMA"</span>,
-  refdate <span class="op">=</span> <span class="va">refdate</span>
-<span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation.html" class="external-link">interpolation</a></span><span class="op">(</span><span class="va">curve</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation-constructor.html" class="external-link">interp_flatforward</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/wilsonfreitas/R-fixedincome" class="external-link">fixedincome</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">refdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2022-02-23"</span><span class="op">)</span></span>
+<span><span class="va">terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">25</span>, <span class="fl">44</span>, <span class="fl">66</span>, <span class="fl">87</span>, <span class="fl">108</span>, <span class="fl">131</span>, <span class="fl">152</span>, <span class="fl">172</span>, <span class="fl">192</span>, <span class="fl">214</span>, <span class="fl">236</span>, <span class="fl">277</span><span class="op">)</span></span>
+<span><span class="va">rates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="fl">0.1065</span>, <span class="fl">0.1064</span>, <span class="fl">0.111</span>, <span class="fl">0.1138</span>, <span class="fl">0.1168</span>, <span class="fl">0.1189</span>, <span class="fl">0.1207</span>, <span class="fl">0.1219</span>,</span>
+<span>  <span class="fl">0.1227</span>, <span class="fl">0.1235</span>, <span class="fl">0.1234</span>, <span class="fl">0.1236</span>, <span class="fl">0.1235</span>, <span class="fl">0.1235</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">curve</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/spotratecurve.html" class="external-link">spotratecurve</a></span><span class="op">(</span></span>
+<span>  <span class="va">rates</span>, <span class="va">terms</span>, <span class="st">"discrete"</span>, <span class="st">"business/252"</span>, <span class="st">"Brazil/ANBIMA"</span>,</span>
+<span>  refdate <span class="op">=</span> <span class="va">refdate</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation.html" class="external-link">interpolation</a></span><span class="op">(</span><span class="va">curve</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation-constructor.html" class="external-link">interp_flatforward</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Aqui criamos a estrutura a termo e abaixo construímos o gráfico com as taxas de juros a termo de 1 dia (linha azul) e destacamos as datas de reuniões do comitê (linhas pontilhadas em vermelho).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fwd_curve</span> <span class="op">&lt;-</span> <span class="va">curve</span><span class="op">[[</span><span class="fl">1</span><span class="op">:</span><span class="fl">277</span><span class="op">]</span><span class="op">]</span> |&gt; <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/forwardrate.html" class="external-link">forwardrate</a></span><span class="op">(</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">277</span>, <span class="va">fwd_curve</span> <span class="op">*</span> <span class="fl">100</span>,
-  type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"blue"</span>,
-  xlab <span class="op">=</span> <span class="st">"Dias úteis"</span>, ylab <span class="op">=</span> <span class="st">"Taxa de Juros (%)"</span>,
-  main <span class="op">=</span> <span class="st">"Curva de Juros Diários a Termo"</span>
-<span class="op">)</span>
-<span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_copom_dates.html">get_copom_dates</a></span><span class="op">(</span><span class="va">refdate</span><span class="op">)</span>
-<span class="va">copom_du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">dates</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="va">copom_du</span>, lty <span class="op">=</span> <span class="st">"dashed"</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">fwd_curve</span> <span class="op">&lt;-</span> <span class="va">curve</span><span class="op">[[</span><span class="fl">1</span><span class="op">:</span><span class="fl">277</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/forwardrate.html" class="external-link">forwardrate</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">277</span>, <span class="va">fwd_curve</span> <span class="op">*</span> <span class="fl">100</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"blue"</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Dias úteis"</span>, ylab <span class="op">=</span> <span class="st">"Taxa de Juros (%)"</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Curva de Juros Diários a Termo"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_copom_dates.html">get_copom_dates</a></span><span class="op">(</span><span class="va">refdate</span><span class="op">)</span></span>
+<span><span class="va">copom_du</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bizdays/man/bizdays.html" class="external-link">bizdays</a></span><span class="op">(</span><span class="va">refdate</span>, <span class="va">dates</span>, <span class="st">"Brazil/ANBIMA"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>v <span class="op">=</span> <span class="va">copom_du</span>, lty <span class="op">=</span> <span class="st">"dashed"</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="copom-pt_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
 <p>No gráfico observa-se que as mudanças de nível das taxas a termo ocorrem entre duas reuniões, o que sabemos que não é o comportamento esperado para taxas no curto prazo. Em alguns casos, entre as duas primeiras reuniões, temos duas mudanças de nível entre as reuniões.</p>
 <p>Dessa maneira buscam-se formas de realizar uma interpolação que, na parte curta da curva, as taxas a termo apresentem mudança de nível apenas nas reuniões do comitê.</p>
@@ -264,7 +275,7 @@ r = \left( (1 + r_{2})^{t_2} (1 + r_{12})^{t - t_1} \right)^{\frac{1}{t}} - 1
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>
