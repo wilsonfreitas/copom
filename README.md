@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# copom
+# copom <img src="man/figures/logo.png" align="right" width="120" />
 
 <!-- badges: start -->
 
@@ -11,9 +11,9 @@ status](https://www.r-pkg.org/badges/version/copom)](https://CRAN.R-project.org/
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-The goal of copom is to interpolate term structures of
-interest rates taking into account the meetings where the regulators
-discuss the changes on interest rates.
+The goal of copom is to interpolate term structures of interest rates
+taking into account the meetings where the regulators discuss the
+changes on interest rates.
 
 In Brazil these meetins are called COPOM and this interpolation
 considers that the interest rate between COPOM meetings are flat,
@@ -54,8 +54,10 @@ curve <- spotratecurve(
 )
 interpolation(curve) <- interp_flatforwardcopom(copom_dates, "second")
 
-plot(curve, use_interpolation = TRUE, show_forward = TRUE,
-     legend_location = "bottomright")
+plot(curve,
+  use_interpolation = TRUE, show_forward = TRUE,
+  legend_location = "bottomright"
+)
 ```
 
 <img src="man/figures/README-example-1.png" width="100%" />
