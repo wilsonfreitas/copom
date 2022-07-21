@@ -91,7 +91,7 @@ setMethod(
 
     t1 <- term(bizdays(x@refdate, object@copom_dates, x@calendar), "days")
     t1 <- c(t1, x@terms[x@terms > max(t1)][1])
-    t <- t1 - shift(t1, fill = 0)
+    t <- t1 - as.numeric(shift(t1, fill = 0))
 
     if (length(object@copom_moves)) {
       acc_moves <- c(0, cumsum(object@copom_moves))
@@ -114,10 +114,10 @@ setMethod(
     interp_fun <- approxfun(interp_coords, method = "linear")
     dc <- x@daycount
     comp <- x@compounding
-    object@func <- function(term) {
-      log_price <- interp_fun(term)
+    object@func <- function(term_) {
+      log_price <- interp_fun(term_)
       price <- exp(log_price)
-      rates(comp, toyears(dc, term, "days"), price)
+      implied_rate(comp, toyears(dc, term(term_, "days")), price)
     }
     object
   }

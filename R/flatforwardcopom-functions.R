@@ -35,7 +35,7 @@ calc_zero <- function(last_result, du_copom, futs, seed_rate) {
     # this is the forward rate that starts at the last copom date
     fwd_copom <- last_result$copom_forward
     # replace the terms to extend it up to the next copom date
-    fwd_copom@terms <- du_copom - last_result$zero@terms
+    fwd_copom@terms <- du_copom - as.numeric(last_result$zero@terms)
     fwd_rates <- forwardrate(last_result$zero)
     # compose the zero with the rates up to the last copom date and
     # from the last to the next copom date
@@ -109,14 +109,14 @@ calc_with <- function(parts, x, results, forward_calc) {
 forward_calc_use_first_future <- function(futs, fwds, du_copom, zero) {
   futs[[du_copom]] <- zero
   idx <- match(du_copom, futs@terms)
-  forwardrate(futs, du_copom, futs@terms[idx + 1])
+  forwardrate(futs, as.numeric(du_copom), futs@terms[idx + 1])
 }
 
 forward_calc_use_second_future <- function(futs, fwds, du_copom, zero) {
   futs <- futs[-1]
   futs[[du_copom]] <- zero
   idx <- match(du_copom, futs@terms)
-  forwardrate(futs, du_copom, futs@terms[idx + 1])
+  forwardrate(futs, as.numeric(du_copom), futs@terms[idx + 1])
 }
 
 forward_calc_use_forward <- function(futs, fwds, du_copom, zero) {
