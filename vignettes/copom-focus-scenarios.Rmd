@@ -1,5 +1,5 @@
 ---
-title: "Using FOCUS Expectations with Flat-Forward COPOM Interpolation"
+title: "Utilizando as expectativas do FOCUS com a interpolação FlatForwardCOPOM"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{copom-focus-scenarios}
@@ -10,15 +10,18 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  out.width = "100%"
 )
 ```
 
-The FOCUS report delivers weekly a number of expectations of market variables
-(indexes and rates).
-One of these is the SELIC rate, it is informed future values for each one of
-the future COPOM meetings.
-These data can be obtained with the `rbcb` package.
+O relatório FOCUS divulga semanalmente um conjunto de expectativas de diversas variáveis de
+mercado (índices, taxas de juros, moedas, ...).
+Uma destas é a taxa SELIC, são informadas expectativas desta taxa para diversas reuniões futuras 
+do COPOM.
+Estas expectativas podem ser obtidas com o pacote `rbcb`.
+
+No código abaixo obtemos as expectativas de taxa SELIC para as próximas reuniões do COPOM.
 
 ```{r}
 library(tidyverse)
@@ -42,7 +45,15 @@ df <- df |>
 df
 ```
 
-```{r}
+As expectativas são relacionadas às reuniões do COPOM, na coluna `reuniao` temos um código formado
+pelo ano e um contador de reuniões por ano.
+Dessa forma, `2022R3` representa a terceira reunião de 2022, e assim por diante.
+Na coluna `mediana` temos a mediana da amostra de expectativas informadas pelos participantes de
+mercado.
+
+No gráfico abaixo observa-se a estrutura a termo das expectativas pelas reuniões futuras.
+
+```{r, fig.width=9, fig.height=6}
 df |>
   ggplot(aes(x = reuniao, y = mediana)) +
   geom_point() +
@@ -51,9 +62,11 @@ df |>
     x = "Meeting",
     y = "SELIC Rate",
     title = "SELIC Rates Expectations",
-    caption = "Source: FOCUS Report"
+    caption = "Source: FOCUS Report (rbcb package)"
   )
 ```
+
+Assumindo a estrutura a termo abaixo para a data de referência `r format(refdate)`.
 
 ```{r curve}
 terms <- c(1, 23, 44, 65, 88, 109, 129, 149, 171, 193, 211, 234, 252)
@@ -67,21 +80,60 @@ curve <- spotratecurve(
 )
 ```
 
+A idéia é utilizar as expectativas fornecidas no relatório FOCUS com a interpolação FlatForwardCOPOM
+e avaliar como seria a estrutura a termo interpolada sujeita a estas expectativas.
+
+Para isso vamos considerar as próximas 8 datas futuras de reunião do COPOM.
+Vamos pegar as 8 expectativas referentes a estas reuniões.
+É necessário subtrair 0.1% das expectativas, pois essa é a diferença típica (nos dias atuais) entre
+a taxa SELIC meta e a taxa DI (CDI).
+
 ```{r}
 library(copom)
 copom_dates <- get_copom_dates(refdate, 8)
 fwd <- (df[["mediana"]][1:8] - 0.1) / 100
+```
+
+Para aplicar a interpolação FlatForwardCOPOM utilizando as expectativas, utilizamos a função
+`interp_copomscenarios` passando as datas futuras de reuniões e as taxas futuras, atribuindo em
+seguida a curva de juros, via o método `interpolation`.
+Como resultado podemos obter do objeto de interpolação as mudanças na taxa de juros implícitas
+nas expectativas.
+
+```{r}
 interpolation(curve) <- interp_copomscenarios(copom_dates, future_rates = fwd)
-plot(curve |> fixedincome::first("1 years"), use_interpolation = TRUE)
+interpolation(curve)@copom_moves * 1e4
 ```
 
-```{r}
-interp <- interpolation(curve)
-interp@copom_moves * 1e4
+Observa-se que as expectativas trazem um mudança de 100 bps na SELIC, seguida por uma mudança de 50 bps,
+um período sem mudanças e uma mudança de -50 bps na oitava reunião.
+
+Uma vez que definimos a interpolação na curva de juros podemos visualizar o efeito da interpolação
+com as expectativas do FOCUS conjuntamente com os pontos da curva de juros.
+
+```{r, fig.width=9, fig.height=6}
+plot(curve, use_interpolation = TRUE)
 ```
 
-```{r}
+Podemos ver que os pontos da curva estão próximos a curva interpolada, demostrando alguma conformidade
+do mercado com as expectativas do FOCUS.
+
+Outra alternativa é fornecer as mudanças nas taxas de juros, ao invés das taxas futuras, na
+função `interp_copomscenarios`.
+
+No código abaixo vamos considerar o cenário onde teremos uma mudança de 100 bps seguida de 2
+mudanças de 25 bps e sem mais mudanças, para as próximas 8 reuniões.
+
+```{r, fig.width=9, fig.height=6}
 moves <- c(100, 25, 25, 0, 0, 0, 0, 0) / 1e4
 interpolation(curve) <- interp_copomscenarios(copom_dates, copom_moves = moves)
-plot(curve |> fixedincome::first("1 years"), use_interpolation = TRUE)
+plot(curve, use_interpolation = TRUE)
 ```
+
+Nota-se um leve descolamento entre os pontos da curva e a interpolação, após o terceiro vencimento.
+Dando a entender que a curva de juros traz um movimento implícito maios próximos das expectativas
+do FOCUS, com uma mudança de 100 bps seguida por outra de 50 bps, ao invés dos cenários avaliados.
+
+Um ponto importante é que com a função `interp_copomscenarios` é possível testar diversos cenários
+de movimentos futuros para a taxa SELIC e comparar os resultados com uma curva de mercado.
+Eventualmente estes cenários podem trazer novos formatos e níveis para a curva de juros.

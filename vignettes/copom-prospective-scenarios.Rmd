@@ -1,5 +1,5 @@
 ---
-title: "Using Prospective Scenarios with Flat-Forward COPOM Interpolation"
+title: "Usando Cenários Prospectivos com a Interpolação FlatForwardCOPOM"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{copom-prospective-scenarios}
@@ -10,10 +10,23 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  out.width = "100%"
 )
 ```
 
+Para realizar a interpolação FlatForwardCOPOM utilizamos a função `interp_flatforwardcopom` onde
+defini-se as datas das reuniões futuros do COPOM e atribui-se a curva de juros utilizando o
+método `interpolation`.
+Um resultado dessa interpolação é um vetor com as mudanças de taxa implícitas na curva de juros
+considerando as reuniões do COPOM.
+Diferentemente, a função `interp_copomscenarios` constrói um interpolador que utiliza cenários de
+mudanças de taxa nas datas de reunião do COPOM e realiza a interpolação.
+Dessa maneira é possível observar a estrutra a termo interpolada e comparar com os pontos da curva.
+Isso é interessante por que as mudanças implicitas na curva, em geral, veem em números quebrados e
+as mudanças executadas pelo COPOM, em geral, são múltiplos de 25 bps.
+Assim é possível visualizar qual conjunto de mudanças múltiplas de 25 bps mais se aproxima da
+curva de juros.
 
 ```{r}
 library(tidyverse)
@@ -39,19 +52,19 @@ curve <- spotratecurve(
 copom_dates <- get_copom_dates(refdate, 4)
 ```
 
-```{r}
+```{r, fig.width=9, fig.height=6}
 moves <- c(100, 0, 0, 0) / 1e4
 interpolation(curve) <- interp_copomscenarios(copom_dates, copom_moves = moves)
 plot(curve, use_interpolation = TRUE)
 ```
 
-```{r}
+```{r, fig.width=9, fig.height=6}
 moves <- c(100, 25, 0, 0) / 1e4
 interpolation(curve) <- interp_copomscenarios(copom_dates, copom_moves = moves)
 plot(curve, use_interpolation = TRUE)
 ```
 
-```{r}
+```{r, fig.width=9, fig.height=6}
 moves <- c(100, 50, 0, 0) / 1e4
 interpolation(curve) <- interp_copomscenarios(copom_dates, copom_moves = moves)
 plot(curve, use_interpolation = TRUE)
