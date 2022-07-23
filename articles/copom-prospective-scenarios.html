@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Using Prospective Scenarios with Flat-Forward COPOM Interpolation • copom</title>
+<title>Usando Cenários Prospectivos com a Interpolação FlatForwardCOPOM • copom</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -17,7 +17,7 @@
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Using Prospective Scenarios with Flat-Forward COPOM Interpolation">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Usando Cenários Prospectivos com a Interpolação FlatForwardCOPOM">
 <meta property="og:description" content="copom">
 <meta property="og:image" content="https://wilsonfreitas.github.io/copom/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -60,10 +60,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/copom-focus-scenarios.html">Using FOCUS Expectations with Flat-Forward COPOM Interpolation</a>
+      <a href="../articles/copom-focus-scenarios.html">Utilizando as expectativas do FOCUS com a interpolação FlatForwardCOPOM</a>
     </li>
     <li>
-      <a href="../articles/copom-prospective-scenarios.html">Using Prospective Scenarios with Flat-Forward COPOM Interpolation</a>
+      <a href="../articles/copom-prospective-scenarios.html">Usando Cenários Prospectivos com a Interpolação FlatForwardCOPOM</a>
     </li>
     <li>
       <a href="../articles/copom-pt.html">Interpolação flat-forward nas reuniões do COPOM</a>
@@ -87,7 +87,7 @@
       </header><script src="copom-prospective-scenarios_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Using Prospective Scenarios with Flat-Forward COPOM Interpolation</h1>
+      <h1 data-toc-skip>Usando Cenários Prospectivos com a Interpolação FlatForwardCOPOM</h1>
             
       
       
@@ -97,11 +97,12 @@
 
     
     
+<p>Para realizar a interpolação FlatForwardCOPOM utilizamos a função <code>interp_flatforwardcopom</code> onde defini-se as datas das reuniões futuros do COPOM e atribui-se a curva de juros utilizando o método <code>interpolation</code>. Um resultado dessa interpolação é um vetor com as mudanças de taxa implícitas na curva de juros considerando as reuniões do COPOM. Diferentemente, a função <code>interp_copomscenarios</code> constrói um interpolador que utiliza cenários de mudanças de taxa nas datas de reunião do COPOM e realiza a interpolação. Dessa maneira é possível observar a estrutra a termo interpolada e comparar com os pontos da curva. Isso é interessante por que as mudanças implicitas na curva, em geral, veem em números quebrados e as mudanças executadas pelo COPOM, em geral, são múltiplos de 25 bps. Assim é possível visualizar qual conjunto de mudanças múltiplas de 25 bps mais se aproxima da curva de juros.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── <span style="font-weight: bold;">Attaching packages</span> ─────────────────────────────────────── tidyverse 1.3.2 ──</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">ggplot2</span> 3.3.6     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">purrr  </span> 0.3.4</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">tibble </span> 3.1.7     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">dplyr  </span> 1.0.9</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">tibble </span> 3.1.8     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">dplyr  </span> 1.0.9</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">tidyr  </span> 1.2.0     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">stringr</span> 1.4.0</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">readr  </span> 2.1.2     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">forcats</span> 0.5.1</span></span>
 <span><span class="co">#&gt; ── <span style="font-weight: bold;">Conflicts</span> ────────────────────────────────────────── tidyverse_conflicts() ──</span></span>
@@ -140,17 +141,17 @@
 <code class="sourceCode R"><span><span class="va">moves</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e4</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation.html" class="external-link">interpolation</a></span><span class="op">(</span><span class="va">curve</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interp_copomscenarios.html">interp_copomscenarios</a></span><span class="op">(</span><span class="va">copom_dates</span>, copom_moves <span class="op">=</span> <span class="va">moves</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">curve</span>, use_interpolation <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="copom-prospective-scenarios_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<p><img src="copom-prospective-scenarios_files/figure-html/unnamed-chunk-4-1.png" width="100%"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">moves</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">25</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e4</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation.html" class="external-link">interpolation</a></span><span class="op">(</span><span class="va">curve</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interp_copomscenarios.html">interp_copomscenarios</a></span><span class="op">(</span><span class="va">copom_dates</span>, copom_moves <span class="op">=</span> <span class="va">moves</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">curve</span>, use_interpolation <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="copom-prospective-scenarios_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="copom-prospective-scenarios_files/figure-html/unnamed-chunk-5-1.png" width="100%"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">moves</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">50</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span> <span class="op">/</span> <span class="fl">1e4</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/fixedincome/man/interpolation.html" class="external-link">interpolation</a></span><span class="op">(</span><span class="va">curve</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interp_copomscenarios.html">interp_copomscenarios</a></span><span class="op">(</span><span class="va">copom_dates</span>, copom_moves <span class="op">=</span> <span class="va">moves</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">curve</span>, use_interpolation <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="copom-prospective-scenarios_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<p><img src="copom-prospective-scenarios_files/figure-html/unnamed-chunk-6-1.png" width="100%"></p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
