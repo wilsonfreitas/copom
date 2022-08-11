@@ -124,7 +124,8 @@ forward_calc_use_forward <- function(futs, fwds, du_copom, zero) {
 }
 
 forward_calc_optim <- function(futs, fwds, du_copom, zero) {
-  du_fwd <- futs@terms - du_copom
+  du_fwd <- as.numeric(futs@terms) - as.numeric(du_copom)
+  du_fwd <- term(du_fwd)
   f_obj <- function(x) {
     spot_rate <- spotratecurve(rep(x, length(du_fwd)), du_fwd,
       refdate = zero@refdate,
