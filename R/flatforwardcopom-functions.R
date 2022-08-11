@@ -2,7 +2,7 @@ split_curve_into_copom_dates <- function(curve, copom_dates) {
   curve_fwd <- forwardrate(curve)
   dates_terms <- maturities(curve)
   lapply(seq_along(copom_dates), function(x) {
-    gte <- dates_terms >= copom_dates[x]
+    gte <- dates_terms > copom_dates[x]
     lte <- dates_terms <= copom_dates[x + 1]
     if (x == 1) {
       idx <- which(gte & lte)
