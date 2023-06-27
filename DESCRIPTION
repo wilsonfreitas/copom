@@ -1,7 +1,7 @@
 Package: copom
 Type: Package
 Title: Term Structure Interpolation Considering Regulators Meetings
-Version: 0.0.1
+Version: 0.0.2
 Author: Wilson Freitas
 Maintainer: Wilson Freitas <wilson.freitas@gmail.com>
 Description: Interpolation of term structures of interest rates that
