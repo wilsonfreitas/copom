@@ -41,7 +41,7 @@ calc_zero <- function(last_result, du_copom, futs, seed_rate) {
     # from the last to the next copom date
     fwd_rates <- c(fwd_rates, fwd_copom)
     spot_curve <- as.spotratecurve(fwd_rates, last_result$zero@refdate)
-    spot_curve[[du_copom]]
+    spot_curve[[as.integer(du_copom)]]
   }
 }
 
