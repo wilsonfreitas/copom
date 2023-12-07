@@ -3,11 +3,46 @@ library(stringr)
 source("examples/utils-functions.R")
 devtools::load_all()
 
-di1 <- get_curve_from_web()
-cd <- get_copom_dates(di1@refdate, 7)
-cm <- c(50, 25, 0, 0, 0, 0, 0) / 1e4
-interpolation(di1) <- interp_copomscenarios(cd, cm)
-plot(di1 |> fixedincome::first("1 years"), use_interpolation = TRUE)
+library(rb3)
+library(bizdays)
+library(fixedincome)
+library(copom)
+library(tidyverse)
+
+# refdate <- getdate("last bizday", Sys.Date(), "Brazil/ANBIMA")
+refdate <- as.Date("2022-09-05")
+fut <- futures_get(refdate)
+yc <- yc_get(refdate)
+df <- yc_superset(yc, fut)
+
+df_curve <- bind_rows(
+  df |> filter(biz_days == 1) |> select(biz_days, r_252),
+  df |> filter(!is.na(symbol)) |> select(biz_days, r_252)
+) |>
+  filter(!duplicated(biz_days))
+
+di1 <- spotratecurve(
+  df_curve$r_252, df_curve$biz_days, "discrete", "business/252", "Brazil/ANBIMA",
+  refdate = refdate
+)
+
+di1_1y <- di1 |> fixedincome::first("1 years")
+cd <- get_copom_dates(di1@refdate, 6)
+cm <- c(0, 0, 0, 0, -25, -25) / 1e4
+interpolation(di1_1y) <- interp_copomscenarios(cd, cm)
+autoplot(di1_1y, curve.geom = "point") +
+  autolayer(di1_1y,
+    curve.interpolation = TRUE, curve.geom = "line",
+    curve.name = "Interpolation"
+  )
+
+cm <- c(0, 0, 0, 0, 0, 0) / 1e4
+interpolation(di1_1y) <- interp_copomscenarios(cd, cm)
+autoplot(di1_1y, curve.geom = "point") +
+  autolayer(di1_1y,
+    curve.interpolation = TRUE, curve.geom = "line",
+    curve.name = "Interpolation"
+  )
 
 # FOCUS scenarios
 

@@ -8,6 +8,7 @@ library(dplyr)
 library(bizdays)
 library(forcats)
 library(rbcb)
+library(rb3)
 library(fixedincome)
 
 copom_dates <- c(
@@ -30,6 +31,23 @@ copom_dates <- c(
 ) |>
   as.Date("%d/%m/%Y") |>
   sort()
+
+get_di1_curve <- function(refdate) {
+  fut <- futures_get(refdate)
+  yc <- yc_get(refdate)
+  df <- yc_superset(yc, fut)
+
+  df_curve <- bind_rows(
+    df |> slice(1) |> select(biz_days, r_252),
+    df |> filter(!is.na(symbol)) |> select(biz_days, r_252)
+  ) |>
+    filter(!duplicated(biz_days))
+
+  spotratecurve(
+    df_curve$r_252, df_curve$biz_days, "discrete", "business/252", "Brazil/ANBIMA",
+    refdate = refdate
+  )
+}
 
 cdi_rate_from_web <- function(refdate = NULL) {
   if (is.null(refdate)) {
