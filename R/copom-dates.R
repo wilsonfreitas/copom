@@ -23,6 +23,8 @@ get_copom_dates <- function(date = NULL, n = 8, guesses = FALSE) {
   # Dates not yet announced by BCB, used only when `guesses = TRUE`.
   copom_dates_guesses <- character(0)
 
+  # Second day of each meeting, when the decision is announced.
+  # BCB publishes next year's calendar by June in a Comunicado.
   copom_dates <- c(
     "2015-01-21", "2015-03-04", "2015-04-29", "2015-06-03", "2015-07-29",
     "2015-09-02", "2015-10-21", "2015-11-25",
@@ -46,8 +48,10 @@ get_copom_dates <- function(date = NULL, n = 8, guesses = FALSE) {
     "2024-09-18", "2024-11-06", "2024-12-11",
     "2025-01-29", "2025-03-19", "2025-05-07", "2025-06-18", "2025-07-30",
     "2025-09-17", "2025-11-05", "2025-12-10",
+    # 2026: checked against BCB Copom statements (Jan-Nov) and calendar (Dec)
     "2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17", "2026-08-05",
     "2026-09-16", "2026-11-04", "2026-12-09",
+    # 2027: Comunicado BCB n. 45.452, 2026-06-23
     "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-16", "2027-08-04",
     "2027-09-22", "2027-10-27", "2027-12-08"
   )
