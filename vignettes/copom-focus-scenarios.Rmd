@@ -28,11 +28,22 @@ library(tidyverse)
 library(fixedincome)
 
 refdate <- as.Date("2022-04-29")
+```
 
+```{r, eval = FALSE}
 df <- rbcb::get_market_expectations("top5s-selic",
   start_date = refdate,
   end_date = refdate
 )
+```
+
+```{r, include = FALSE}
+# Saved copy of the call above (data-raw/vignette-data.R), so the vignette
+# builds without web access.
+df <- read.csv("focus-selic-2022-04-29.csv")
+```
+
+```{r}
 df <- df |>
   mutate(
     Reuniao_ano = str_split(reuniao, "/", simplify = TRUE)[, 2],
