@@ -26,7 +26,7 @@ di1 <- spotratecurve(
   refdate = refdate
 )
 
-di1_1y <- di1 |> fixedincome::first("1 years")
+di1_1y <- di1 |> fixedincome::first("2 years")
 cd <- get_copom_dates(di1@refdate, 6)
 cm <- c(0, 0, 0, 0, -25, -25) / 1e4
 interpolation(di1_1y) <- interp_copomscenarios(cd, cm)
@@ -36,7 +36,7 @@ autoplot(di1_1y, curve.geom = "point") +
     curve.name = "Interpolation"
   )
 
-cm <- c(0, 0, 0, 0, 0, 0) / 1e4
+cm <- c(0, 0, -25, 0, 0, 0) / 1e4
 interpolation(di1_1y) <- interp_copomscenarios(cd, cm)
 autoplot(di1_1y, curve.geom = "point") +
   autolayer(di1_1y,
@@ -58,7 +58,7 @@ df <- df |>
   filter(tipoCalculo == "C")
 
 fwd <- (df[["mediana"]][2:8] - 0.1) / 100
-interpolation(di1) <- interp_copomscenarios(cd, forward_rates = fwd)
+interpolation(di1) <- interp_copomscenarios(cd, future_rates = fwd)
 plot(di1 |> fixedincome::first("1 years"), use_interpolation = TRUE)
 
 # ----
