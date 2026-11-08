@@ -11,7 +11,8 @@ library(fixedincome)
 devtools::load_all() # run the scripts from the package root
 
 # DI1 curve from B3 data: the 1-day vertex plus the vertices of the DI1 futures.
-# Written for rb3 0.1.0.
+# Written for rb3 0.1.0. To be replaced by an rb3 helper:
+# https://github.com/ropensci/rb3/issues/130
 get_di1_curve <- function(refdate) {
   refdate <- as.Date(refdate)
   fetch_marketdata("b3-reference-rates", refdate = refdate, curve_name = "PRE")
