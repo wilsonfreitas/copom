@@ -26,5 +26,4 @@
 #' @importFrom grDevices xy.coords
 #' @importFrom stats optim approxfun
 #' @importFrom methods new
-#' @docType package
-NULL
+"_PACKAGE"

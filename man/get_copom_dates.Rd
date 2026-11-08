@@ -4,23 +4,30 @@
 \alias{get_copom_dates}
 \title{Historical COPOM dates}
 \usage{
-get_copom_dates(date = NULL, n = 8)
+get_copom_dates(date = NULL, n = 8, guesses = FALSE)
 }
 \arguments{
 \item{date}{reference date}
 
-\item{n}{number of dates returned
+\item{n}{number of dates returned}
+
+\item{guesses}{if `TRUE`, guessed dates for meetings that BCB has not
+       announced yet are appended after the last official date.
 
 If `date` is `NULL` all dates are returned.
-Once `date` is set, `n` dates greater than or equal to `date` are returned.}
+Once `date` is set, `n` dates greater than or equal to `date` are returned.
+
+Guessed dates are only used when they come after the last official date,
+so they are dropped automatically once the official calendar is updated.}
 }
 \value{
 A vector with `Date` objects.
 }
 \description{
-Historical COPOM dates since 2015.
+COPOM dates since 2015, including meetings already scheduled by BCB.
 }
 \examples{
 get_copom_dates()
 get_copom_dates("2022-01-04", 4)
+get_copom_dates("2025-11-01", 4, guesses = TRUE)
 }

@@ -22,6 +22,13 @@ the spot rate curve and functions to help with visualization.
 Marcos C. S. Carreira and Richard J. Brostowicz.
             "Brazilian Derivatives and Securities", Palgrave Macmillan, 2016
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://wilsonfreitas.github.io/copom/}
+}
+
+}
 \author{
 Wilson Freitas \email{wilson.freitas@gmail.com}
 }

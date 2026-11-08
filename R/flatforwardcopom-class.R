@@ -138,7 +138,7 @@ setMethod(
     object@func <- function(term_) {
       log_price <- interp_fun(term_)
       price <- exp(log_price)
-      implied_rate(comp, toyears(dc, term(term_, "days")), price)
+      implied_rate(comp, as.numeric(toyears(dc, term(term_, "days"))), price)
     }
     object
   }

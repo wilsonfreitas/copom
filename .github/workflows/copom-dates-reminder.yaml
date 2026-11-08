@@ -1,0 +1,25 @@
+# Once a year, open an issue to remind the maintainer to update the COPOM
+# dates in R/copom-dates.R (BCB usually publishes next year's calendar mid-year).
+on:
+  schedule:
+    - cron: "0 12 1 7 *"
+  workflow_dispatch:
+
+name: copom-dates-reminder
+
+permissions:
+  issues: write
+
+jobs:
+  reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open reminder issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          year=$(( $(date +%Y) + 1 ))
+          gh issue create \
+            --title "Update COPOM dates for $year" \
+            --body "Check the BCB calendar for $year and update \`R/copom-dates.R\`: add the official dates to \`copom_dates\` and remove any guesses that are now official from \`copom_dates_guesses\`."

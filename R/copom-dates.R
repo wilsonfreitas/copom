@@ -1,19 +1,28 @@
 #' Historical COPOM dates
 #'
-#' Historical COPOM dates since 2015.
+#' COPOM dates since 2015, including meetings already scheduled by BCB.
 #'
 #' @param date reference date
 #' @param n number of dates returned
+#' @param guesses if `TRUE`, guessed dates for meetings that BCB has not
+#'        announced yet are appended after the last official date.
 #'
 #' If `date` is `NULL` all dates are returned.
 #' Once `date` is set, `n` dates greater than or equal to `date` are returned.
+#'
+#' Guessed dates are only used when they come after the last official date,
+#' so they are dropped automatically once the official calendar is updated.
 #'
 #' @return A vector with `Date` objects.
 #' @examples
 #' get_copom_dates()
 #' get_copom_dates("2022-01-04", 4)
+#' get_copom_dates("2025-11-01", 4, guesses = TRUE)
 #' @export
-get_copom_dates <- function(date = NULL, n = 8) {
+get_copom_dates <- function(date = NULL, n = 8, guesses = FALSE) {
+  # Dates not yet announced by BCB, used only when `guesses = TRUE`.
+  copom_dates_guesses <- character(0)
+
   copom_dates <- c(
     "2015-01-21", "2015-03-04", "2015-04-29", "2015-06-03", "2015-07-29",
     "2015-09-02", "2015-10-21", "2015-11-25",
@@ -36,10 +45,17 @@ get_copom_dates <- function(date = NULL, n = 8) {
     "2024-01-31", "2024-03-20", "2024-05-08", "2024-06-19", "2024-07-31",
     "2024-09-18", "2024-11-06", "2024-12-11",
     "2025-01-29", "2025-03-19", "2025-05-07", "2025-06-18", "2025-07-30",
-    "2025-09-17", "2025-11-05", "2025-12-10"
+    "2025-09-17", "2025-11-05", "2025-12-10",
+    "2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17", "2026-08-05",
+    "2026-09-16", "2026-11-04", "2026-12-09",
+    "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-16", "2027-08-04",
+    "2027-09-22", "2027-10-27", "2027-12-08"
   )
 
   x <- sort(as.Date(copom_dates))
+  if (guesses) {
+    x <- append_copom_guesses(x, as.Date(copom_dates_guesses))
+  }
   if (is.null(date)) {
     x
   } else {
@@ -47,4 +63,8 @@ get_copom_dates <- function(date = NULL, n = 8) {
     dates <- x[x >= date]
     dates[seq_len(n)]
   }
+}
+
+append_copom_guesses <- function(official, guesses) {
+  sort(c(official, guesses[guesses > max(official)]))
 }
