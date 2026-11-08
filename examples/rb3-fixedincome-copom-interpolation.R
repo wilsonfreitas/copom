@@ -1,27 +1,8 @@
+source("examples/utils-functions.R")
 
-library(rb3)
-library(bizdays)
-library(fixedincome)
-library(copom)
-library(tidyverse)
-
-refdate <- getdate("last bizday", Sys.Date(), "Brazil/ANBIMA")
-# refdate <- as.Date("2022-03-09")
-fut <- futures_get(refdate)
-yc <- yc_get(refdate)
-df <- yc_superset(yc, fut)
-
-df_curve <- bind_rows(
-  df |> slice(1) |> select(biz_days, r_252),
-  df |> filter(!is.na(symbol)) |> select(biz_days, r_252)
-) |>
-  filter(!duplicated(biz_days))
-
-di1_curve <- spotratecurve(
-  df_curve$r_252, df_curve$biz_days, "discrete", "business/252", "Brazil/ANBIMA",
-  refdate = refdate
-)
-
+# refdate <- getdate("last bizday", Sys.Date(), "Brazil/ANBIMA")
+refdate <- as.Date("2022-09-05")
+di1_curve <- get_di1_curve(refdate)
 
 di1_curve_part <- fixedincome::first(di1_curve, "3 years")
 copom_dates <- get_copom_dates(refdate, 8)

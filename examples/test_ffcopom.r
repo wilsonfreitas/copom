@@ -1,3 +1,4 @@
+source("examples/utils-functions.R")
 
 copom_dates <- as.Date(
   c("2022-03-17", "2022-05-05", "2022-06-17", "2022-08-04")
@@ -14,9 +15,7 @@ curve <- spotratecurve(
 interpolation(curve) <- interp_flatforwardcopom(copom_dates, "second")
 plot(curve, use_interpolation = TRUE, show_forward = TRUE)
 
-source("examples/utils-functions.R")
-
-curve <- get_curve_from_web()
+curve <- get_di1_curve("2022-09-05")
 copom_dates <- get_copom_dates(curve@refdate, 8)
 interpolation(curve) <- interp_flatforwardcopom(copom_dates, "second")
 plot(curve, use_interpolation = TRUE, show_forward = TRUE)

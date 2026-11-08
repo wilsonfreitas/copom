@@ -1,19 +1,17 @@
-
 source("examples/utils-functions.R")
-source("examples/copomscenarios.R")
 
-contracts <- get_contracts("2022-04-01")
+refdate <- as.Date("2022-09-05")
+fetch_marketdata("b3-futures-settlement-prices", refdate = refdate)
 
-futures <- contracts |>
-  filter(Mercadoria == "DI1") |>
+futures <- futures_get() |>
+  filter(refdate == !!refdate, commodity == "DI1") |>
+  collect() |>
   mutate(
-    refdate = as.Date(DataRef),
-    symbol = paste0(Mercadoria, Vencimento),
-    maturity_date = contract_to_maturity(Vencimento) |>
+    maturity_date = maturitycode2date(maturity_code) |>
       following("Brazil/ANBIMA"),
-    business_days = bizdays(DataRef, maturity_date, "Brazil/ANBIMA"),
+    business_days = bizdays(refdate, maturity_date, "Brazil/ANBIMA"),
     notional = 100000,
-    spot_price = PUAtual
+    spot_price = price
   ) |>
   filter(business_days > 0, business_days <= 252) |>
   select(refdate, symbol, maturity_date, notional, business_days, spot_price)
@@ -38,9 +36,9 @@ fit_interpolation_with_bonds <- function(object, x, bonds,
   interp_copomscenarios(object@copom_dates, res$par)
 }
 
-di1 <- get_curve_from_web("2022-04-01") |> fixedincome::first("2 years")
+di1 <- get_di1_curve(refdate) |> fixedincome::first("2 years")
 
-cd <- copom_dates[copom_dates > di1@refdate][1:6]
+cd <- get_copom_dates(di1@refdate, 6)
 cm <- c(0, 0, 0, 0, 0, 0) / 1e4
 
 interp <- fit_interpolation_with_bonds(
